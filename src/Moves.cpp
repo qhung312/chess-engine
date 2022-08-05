@@ -1,7 +1,7 @@
 #include "Moves.h"
 
 vector<string> pseudoLegal(const Board& b) {
-    return moveWhitePawn(b);
+    return moveRook(b.whiteRook, b.whitePieces(), b.blackPieces());
 }
 
 vector<string> moveWhitePawn(const Board& b) {
@@ -145,5 +145,35 @@ vector<string> moveBlackPawn(const Board& b) {
         }
     }
     
+    return ans;
+}
+
+vector<string> moveRook(bitboard r, bitboard same, bitboard diff) {
+    vector<string> ans;
+    bitboard empty = ~(same | diff);
+    while (r) {
+        int i = __builtin_ctzll(r);
+        // Move up
+        for (int j = i - 8; j >= 0; j -= 8) {
+            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
+            if (!(empty >> j & 1ULL)) break;
+        }
+        // Move down
+        for (int j = i + 8; j < 63; j += 8) {
+            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
+            if (!(empty >> j & 1ULL)) break;
+        }
+        // Move left
+        for (int j = i - 1; j / 8 == i / 8; j--) {
+            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
+            if (!(empty >> j & 1ULL)) break;
+        }
+        // Move right
+        for (int j = i + 1; j / 8 == i / 8; j++) {
+            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
+            if (!(empty >> j & 1ULL)) break;
+        }
+        r ^= 1ULL << i;
+    }
     return ans;
 }

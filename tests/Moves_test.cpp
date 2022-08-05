@@ -3,7 +3,7 @@
 using namespace std;
 
 int main() {
-    Board a = boardFromFEN("rnbqkbnr/1ppppppp/8/p7/7P/8/PPPPPPP1/RNBQKBNR w KQkq - 0 2");
+    Board a = boardFromFEN("8/8/3q4/8/p2R2K1/4Bq2/8/3n4 w - - 0 1");
     auto v = pseudoLegal(a);
     for (auto& s : v) {
         cout << s << '\n';

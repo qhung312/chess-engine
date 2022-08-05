@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <utility>
 
 using namespace std;
 using bitboard = unsigned long long;

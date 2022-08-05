@@ -118,7 +118,6 @@ Board boardFromFEN(const string& fen) {
     
     vector<string> board(8, string(8, '.'));
     int cur_line = 0;
-    cout << placement << '\n';
     int i = 0;
     for (char c : placement) {
         if (c == '/') {

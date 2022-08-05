@@ -80,19 +80,27 @@ void Board::init(const vector<string>& b, Side side, bool wkc, bool wqc, bool bk
     fullMove = full;
 }
 
-bool Board::whiteOccupied(int i) {
-    return (whiteKing >> i & 1ULL) | (whiteRook >> i & 1ULL) |
-           (whiteBishop >> i & 1ULL) | (whiteQueen >> i & 1ULL) |
-           (whiteKnight >> i & 1ULL) | (whitePawn >> i & 1ULL);
+bitboard Board::whitePieces() const {
+    return whiteKing | whiteRook |
+           whiteBishop | whiteQueen |
+           whiteKnight | whitePawn;
 }
 
-bool Board::blackOccupied(int i) {
-    return (blackKing >> i & 1ULL) | (blackRook >> i & 1ULL) |
-           (blackBishop >> i & 1ULL) | (blackQueen >> i & 1ULL) |
-           (blackKnight >> i & 1ULL) | (blackPawn >> i & 1ULL);
+bitboard Board::blackPieces() const {
+    return blackKing | blackRook |
+           blackBishop | blackQueen |
+           blackKnight | blackPawn;
 }
 
-bool Board::occupied(int i) {
+bool Board::whiteOccupied(int i) const {
+    return whitePieces() >> i & 1ULL;
+}
+
+bool Board::blackOccupied(int i) const {
+    return blackPieces() >> i & 1ULL;
+}
+
+bool Board::occupied(int i) const {
     return whiteOccupied(i) | blackOccupied(i);
 }
 
@@ -187,6 +195,13 @@ Board boardFromFEN(const string& fen) {
 int convertAlgebraic(const string& s) {
     int r = 8 - (s[1] - '0'), c = s[0] - 'a';
     return 8 * r + c;
+}
+
+string convert64(int i) {
+    string ans(2, '.');
+    ans[0] = i % 8 + 'a';
+    ans[1] = '8' - (i / 8);
+    return ans;
 }
 
 void printBitboard(ostream& out, const bitboard& b) {

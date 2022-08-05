@@ -7,10 +7,6 @@ int main() {
     Board standardBoard;
     cout << standardBoard << '\n';
     
-    cout << "---> Printing binary representation of 10\n";
-    printBitboard(cout, 10);
-    cout << '\n';
-    
     const string fen1 = "rnb1kbnr/pp3ppp/2p5/3pp3/B3P2q/5N2/PPPP1PPP/RNBQ1RK1 b kq - 3 5";
     cout << "---> Reading board from FEN " << fen1 << '\n';
     auto boardFen1 = boardFromFEN(fen1);
@@ -20,4 +16,7 @@ int main() {
     cout << "---> Reading board from FEN " << fen2 << '\n';
     auto boardFen2 = boardFromFEN(fen2);
     cout << boardFen2 << '\n';
+    
+    cout << standardBoard.occupied(16) << '\n';
+    cout << convert64(15) << '\n';
 }

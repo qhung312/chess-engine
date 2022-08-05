@@ -13,6 +13,11 @@ struct Board {
     Board();
     Board(const vector<string>&, Side, bool, bool, bool, bool, int, int, int);
     void init(const vector<string>&, Side, bool, bool, bool, bool, int, int, int);
+    bool occupied(int);
+    bool whiteOccupied(int);
+    bool blackOccupied(int);
+    void set(bitboard&, int);
+    void unset(int);
 
     // Allow debugging of entire board by printing 8x8 chessboard
     friend ostream& operator<<(ostream&, const Board&);

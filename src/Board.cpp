@@ -80,6 +80,42 @@ void Board::init(const vector<string>& b, Side side, bool wkc, bool wqc, bool bk
     fullMove = full;
 }
 
+bool Board::whiteOccupied(int i) {
+    return (whiteKing >> i & 1ULL) | (whiteRook >> i & 1ULL) |
+           (whiteBishop >> i & 1ULL) | (whiteQueen >> i & 1ULL) |
+           (whiteKnight >> i & 1ULL) | (whitePawn >> i & 1ULL);
+}
+
+bool Board::blackOccupied(int i) {
+    return (blackKing >> i & 1ULL) | (blackRook >> i & 1ULL) |
+           (blackBishop >> i & 1ULL) | (blackQueen >> i & 1ULL) |
+           (blackKnight >> i & 1ULL) | (blackPawn >> i & 1ULL);
+}
+
+bool Board::occupied(int i) {
+    return whiteOccupied(i) | blackOccupied(i);
+}
+
+void Board::set(bitboard& b, int i) {
+    if (b >> i & 1) b ^= (1ULL << i);
+}
+
+void Board::unset(int i) {
+    if (whiteKing >> i & 1ULL) whiteKing ^= 1ULL << i;
+    if (whiteRook >> i & 1ULL) whiteRook ^= 1ULL << i;
+    if (whiteBishop >> i & 1ULL) whiteBishop ^= 1ULL << i;
+    if (whiteQueen >> i & 1ULL) whiteQueen ^= 1ULL << i;
+    if (whiteKnight >> i & 1ULL) whiteKnight ^= 1ULL << i;
+    if (whitePawn >> i & 1ULL) whitePawn ^= 1ULL << i;
+    
+    if (blackKing >> i & 1ULL) blackKing ^= 1ULL << i;
+    if (blackRook >> i & 1ULL) blackRook ^= 1ULL << i;
+    if (blackBishop >> i & 1ULL) blackBishop ^= 1ULL << i;
+    if (blackQueen >> i & 1ULL) blackQueen ^= 1ULL << i;
+    if (blackKnight >> i & 1ULL) blackKnight ^= 1ULL << i;
+    if (blackPawn >> i & 1ULL) blackPawn ^= 1ULL << i;
+}
+
 ostream& operator<<(ostream& out, const Board& board) {
     vector<string> b(8, string(8, '.'));
     for (int i = 0; i < 64; i++) {

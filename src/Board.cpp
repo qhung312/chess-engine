@@ -105,7 +105,7 @@ bool Board::occupied(int i) const {
 }
 
 void Board::set(bitboard& b, int i) {
-    if (b >> i & 1) b ^= (1ULL << i);
+    if (!(b >> i & 1)) b ^= (1ULL << i);
 }
 
 void Board::unset(int i) {

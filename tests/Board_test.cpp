@@ -19,4 +19,10 @@ int main() {
     
     cout << standardBoard.occupied(16) << '\n';
     cout << convert64(15) << '\n';
+    
+    cout << '\n';
+    
+    standardBoard.set(standardBoard.whiteQueen, 16);
+    standardBoard.unset(63);
+    cout << standardBoard << '\n';
 }

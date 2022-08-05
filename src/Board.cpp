@@ -75,7 +75,7 @@ void Board::init(const vector<string>& b, Side side, bool wkc, bool wqc, bool bk
     blackKingCastle = bkc;
     blackQueenCastle = bqc;
     
-    enPassant = -1;
+    enPassant = en;
     halfMove = half;
     fullMove = full;
 }

@@ -12,6 +12,10 @@ piece values, and position values for each piece.
 const string ID = "qhung312-BOT";
 const string AUTHOR = "qhung312";
 
+// Define some useful mask for rows and columns
+const unsigned long long ROW0 = 255ULL;
+const unsigned long long ROW4 = 1095216660480ULL;
+
 /*
 Piece values and positional values are taken
 from https://www.chessprogramming.org/Simplified_Evaluation_Function

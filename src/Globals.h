@@ -17,6 +17,11 @@ const unsigned long long ROW0 = 255ULL;
 const unsigned long long ROW4 = 1095216660480ULL;
 const unsigned long long ROW7 = 18374686479671623680ULL;
 const unsigned long long ROW3 = 4278190080ULL;
+
+const unsigned long long COL0 = 72340172838076673ULL;
+const unsigned long long COL7 = 9259542123273814144ULL;
+
+const vector<int> KNIGHT_SHIFTS = {};
 /*
 Piece values and positional values are taken
 from https://www.chessprogramming.org/Simplified_Evaluation_Function

@@ -3,10 +3,9 @@
 using namespace std;
 
 int main() {
-    Board a = boardFromFEN("rnbqkbnr/ppp1pppp/8/4P3/6P1/7P/PPpP1P2/RNBQKBNR b KQkq - 0 5");
-    // cout << a << '\n';
+    Board a = boardFromFEN("rnbqkbnr/1ppppppp/8/p7/7P/8/PPPPPPP1/RNBQKBNR w KQkq - 0 2");
     auto v = pseudoLegal(a);
-    for (auto& [s, b] : v) {
-        cout << s << '\n' << b << '\n';
+    for (auto& s : v) {
+        cout << s << '\n';
     }
 }

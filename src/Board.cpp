@@ -151,6 +151,7 @@ ostream& operator<<(ostream& out, const Board& board) {
     out << "Possible en passant: " << board.enPassant << '\n';
     out << "Half moves: " << board.halfMove << '\n';
     out << "Full moves: " << board.fullMove << '\n';
+    out << "-------------------------------------------------\n"; // Better readability when debugging
     return out;
 }
 

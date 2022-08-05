@@ -1,7 +1,7 @@
 #include "Moves.h"
 
 vector<string> pseudoLegal(const Board& b) {
-    return moveRook(b.whiteRook, b.whitePieces(), b.blackPieces());
+    return moveBishop(b.whiteBishop, b.whitePieces(), b.blackPieces());
 }
 
 vector<string> moveWhitePawn(const Board& b) {
@@ -174,6 +174,40 @@ vector<string> moveRook(bitboard r, bitboard same, bitboard diff) {
             if (!(empty >> j & 1ULL)) break;
         }
         r ^= 1ULL << i;
+    }
+    return ans;
+}
+
+vector<string> moveBishop(bitboard b, bitboard same, bitboard diff) {
+    vector<string> ans;
+    bitboard empty = ~(same | diff);
+    while (b) {
+        int i = __builtin_ctzll(b);
+        // Left up
+        for (int x = i / 8 - 1, y = i % 8 - 1; x >= 0 && y >= 0; x--, y--) {
+            int j = x * 8 + y;
+            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
+            if (!(empty >> j & 1ULL)) break;
+        }
+        // Left down
+        for (int x = i / 8 + 1, y = i % 8 - 1; x < 8 && y >= 0; x++, y--) {
+            int j = x * 8 + y;
+            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
+            if (!(empty >> j & 1ULL)) break;
+        }
+        // Right up
+        for (int x = i / 8 - 1, y = i % 8 + 1; x >= 0 && y < 8; x--, y++) {
+            int j = x * 8 + y;
+            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
+            if (!(empty >> j & 1ULL)) break;
+        }
+        // Right down
+        for (int x = i / 8 + 1, y = i % 8 + 1; x < 8 && y < 8; x++, y++) {
+            int j = x * 8 + y;
+            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
+            if (!(empty >> j & 1ULL)) break;
+        }
+        b ^= 1ULL << i;
     }
     return ans;
 }

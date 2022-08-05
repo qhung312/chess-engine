@@ -15,3 +15,4 @@ vector<string> pseudoLegal(const Board&);
 vector<string> moveWhitePawn(const Board&);
 vector<string> moveBlackPawn(const Board&);
 vector<string> moveRook(bitboard, bitboard, bitboard);
+vector<string> moveBishop(bitboard, bitboard, bitboard);

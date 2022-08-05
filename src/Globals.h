@@ -15,7 +15,8 @@ const string AUTHOR = "qhung312";
 // Define some useful mask for rows and columns
 const unsigned long long ROW0 = 255ULL;
 const unsigned long long ROW4 = 1095216660480ULL;
-
+const unsigned long long ROW7 = 18374686479671623680ULL;
+const unsigned long long ROW3 = 4278190080ULL;
 /*
 Piece values and positional values are taken
 from https://www.chessprogramming.org/Simplified_Evaluation_Function

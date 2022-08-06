@@ -59,7 +59,7 @@ vector<string> moveWhitePawn(const Board& b) {
     }
     
     // Move 2 forward
-    bitboard twoForward = (b.whitePawn >> 16) & empty & (empty >> 8) & ~ROW0;
+    bitboard twoForward = (b.whitePawn >> 16) & empty & (empty >> 8) & ROW4;
     while (twoForward) {
         int i = __builtin_ctzll(twoForward);
         ans.push_back(convert64(i + 16) + convert64(i));
@@ -84,8 +84,8 @@ vector<string> moveWhitePawn(const Board& b) {
     // Move 1 forward to promote (always queen)
     bitboard onePromote = (b.whitePawn >> 8) & empty & ROW0;
     while (onePromote) {
-        int i = __builtin_ctzll(rightPromote);
-        ans.push_back(convert64(i + 8) + convert64(i));
+        int i = __builtin_ctzll(onePromote);
+        ans.push_back(convert64(i + 8) + convert64(i) + "q");
         onePromote ^= 1ULL << i;
     }
     
@@ -156,6 +156,13 @@ vector<string> moveBlackPawn(const Board& b) {
         ans.push_back(convert64(i - 9) + convert64(i) + "q");
         rightPromote ^= 1ULL << i;
     }
+    // move once to promote (always queen)
+    bitboard onePromote = (b.blackPawn << 8) & empty & ROW7;
+    while (onePromote) {
+        int i = __builtin_ctzll(onePromote);
+        ans.push_back(convert64(i - 8) + convert64(i) + "q");
+        onePromote ^= 1ULL << i;
+    }
     
     // En passant
     if (b.enPassant != -1) {
@@ -177,7 +184,7 @@ vector<string> moveBlackPawn(const Board& b) {
 vector<string> moveWhiteKing(const Board& b) {
     assert(__builtin_popcountll(b.whiteKing) == 1);
     bitboard empty = ~(b.whitePieces() | b.blackPieces());
-    bitboard cango = empty | b.blackPieces();
+    bitboard cango = ~b.whitePieces();
     vector<string> ans;
     int i = __builtin_ctzll(b.whiteKing);
     if ((b.whiteKing >> 8) & cango) ans.push_back(convert64(i) + convert64(i - 8));
@@ -205,7 +212,7 @@ vector<string> moveWhiteKing(const Board& b) {
 vector<string> moveBlackKing(const Board& b) {
     assert(__builtin_popcountll(b.blackKing) == 1);
     bitboard empty = ~(b.whitePieces() | b.blackPieces());
-    bitboard cango = empty | b.whitePieces();
+    bitboard cango = ~b.blackPieces();
     vector<string> ans;
     int i = __builtin_ctzll(b.blackKing);
     if ((b.blackKing >> 8) & cango) ans.push_back(convert64(i) + convert64(i - 8));
@@ -309,12 +316,12 @@ vector<string> moveQueen(bitboard q, bitboard same, bitboard diff) {
             if (!(empty >> j & 1ULL)) break;
         }
         // Move left
-        for (int j = i - 1; j / 8 == i / 8; j--) {
+        for (int j = i - 1; j >= 0 && j / 8 == i / 8; j--) {
             if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
             if (!(empty >> j & 1ULL)) break;
         }
         // Move right
-        for (int j = i + 1; j / 8 == i / 8; j++) {
+        for (int j = i + 1; j < 64 && j / 8 == i / 8; j++) {
             if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
             if (!(empty >> j & 1ULL)) break;
         }// Left up
@@ -349,7 +356,7 @@ vector<string> moveQueen(bitboard q, bitboard same, bitboard diff) {
 vector<string> moveKnight(bitboard n, bitboard same, bitboard diff) {
     vector<string> ans;
     bitboard empty = ~(same | diff);
-    bitboard cango = empty | diff;
+    bitboard cango = ~same;
     bitboard mask = (n >> 15) & cango & ~COL0;
     while (mask) {
         int i = __builtin_ctzll(mask);

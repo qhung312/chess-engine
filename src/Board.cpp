@@ -307,9 +307,15 @@ Board doMove(const Board& b, const string& s) {
         else ans.set(ans.blackKnight, t);
         
         ans.halfMove = diff ? 0 : ans.halfMove + 1;
-        if (bp >> t & 1ULL) ans.fullMove++;
+        if (bp >> f & 1ULL) ans.fullMove++;
         ans.enPassant = -1;
     }
+    
+    if (t == 0) ans.blackQueenCastle = false;
+    if (t == 7) ans.blackKingCastle = false;
+    if (t == 56) ans.whiteQueenCastle = false;
+    if (t == 63) ans.whiteKingCastle = false;
+    
     return ans;
 }
 

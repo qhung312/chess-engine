@@ -1,25 +1,22 @@
 #include <bits/stdc++.h>
-#include <cassert>
-#include <ctime>
 #include "../src/Moves.h"
 using namespace std;
 
-constexpr int MAX_DEPTH = 6;
+constexpr int MAX_DEPTH = 4;
 
-long long ans = 0;
-void recurse(Board b, int depth) {
-    ans++;
-    if (depth == MAX_DEPTH) return;
+int perft(const Board& b, int d) {
+    if (d == 0) return 1;
+    int ans = 0;
     auto v = legalMoves(b);
-    for (auto& m : v) {
-        Board nb = doMove(b, m);
-        recurse(nb, depth + 1);
+    for (auto s : v) {
+        Board nb = doMove(b, s);
+        ans += perft(nb, d - 1);
     }
+    return ans;
 }
 
 int main() {
     Board a = Board();
-    recurse(a, 0);
-    cout << "Nodes processed: " << ans - 1 << '\n'; // Minus initial state
-    cerr << (double) clock() / CLOCKS_PER_SEC << '\n';
+    cout << perft(a, MAX_DEPTH) << '\n';
+    cout << "That took: " << (double) clock() / CLOCKS_PER_SEC << '\n';
 }

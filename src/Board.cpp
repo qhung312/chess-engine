@@ -256,6 +256,7 @@ Board doMove(const Board& b, const string& s) {
             ans.halfMove = diff ? 0 : ans.halfMove + 1;
         }
         ans.whiteKingCastle = ans.whiteQueenCastle = false;
+        ans.enPassant = -1;
     } else if (b.blackKing >> f & 1ULL) {
         int fc = f % 8, tc = t % 8;
         if (abs(fc - tc) == 2) {
@@ -275,6 +276,7 @@ Board doMove(const Board& b, const string& s) {
         }
         ans.blackKingCastle = ans.blackQueenCastle = false;
         ans.fullMove++;
+        ans.enPassant = -1;
     } else if (b.whiteRook >> f & 1ULL) {
         if (ans.whiteKingCastle & (f == 63)) {
             ans.whiteKingCastle = false;
@@ -284,6 +286,7 @@ Board doMove(const Board& b, const string& s) {
         }
         ans.set(ans.whiteRook, t);
         ans.halfMove = diff ? 0 : ans.halfMove + 1;
+        ans.enPassant = -1;
     } else if (b.blackRook >> f & 1ULL) {
         if (ans.blackKingCastle & (f == 7)) {
             ans.blackKingCastle = false;
@@ -293,6 +296,7 @@ Board doMove(const Board& b, const string& s) {
         }
         ans.halfMove = diff ? 0 : ans.halfMove + 1;
         ans.fullMove++;
+        ans.enPassant = -1;
     } else {
         // Easy. Just move and mark if capture something
         if (b.whiteBishop >> f & 1ULL) ans.set(ans.whiteBishop, t);
@@ -304,6 +308,7 @@ Board doMove(const Board& b, const string& s) {
         
         ans.halfMove = diff ? 0 : ans.halfMove + 1;
         if (bp >> t & 1ULL) ans.fullMove++;
+        ans.enPassant = -1;
     }
     return ans;
 }

@@ -11,6 +11,7 @@ to check for legal moves.
 */
 
 vector<string> pseudoLegal(const Board&);
+vector<string> legalMoves(const Board&);
 
 vector<string> moveWhitePawn(const Board&);
 vector<string> moveBlackPawn(const Board&);
@@ -21,6 +22,9 @@ vector<string> moveRook(bitboard, bitboard, bitboard);
 vector<string> moveBishop(bitboard, bitboard, bitboard);
 vector<string> moveQueen(bitboard, bitboard, bitboard);
 vector<string> moveKnight(bitboard, bitboard, bitboard);
+
+bool checked(bitboard, bitboard, Side, bitboard, bitboard, bitboard, bitboard, bitboard, bitboard);
+bool checked(const Board&, const Side);
 
 // Helper function to concatenate vectors
 template<typename T>

@@ -1,4 +1,6 @@
 #include "Moves.h"
+#include "Board.h"
+#include "Globals.h"
 #include <cassert>
 
 vector<string> pseudoLegal(const Board& b) {
@@ -13,6 +15,19 @@ vector<string> pseudoLegal(const Board& b) {
                moveBishop(b.blackBishop, bp, wp) + moveQueen(b.blackQueen, bp, wp) +
                moveBlackKing(b) + moveKnight(b.blackKnight, bp, wp);
     }
+}
+
+vector<string> legalMoves(const Board& b) {
+    auto moves = pseudoLegal(b);
+    vector<string> ans;
+    for (auto& s : moves) {
+        Board nb = doMove(b, s);
+        if (checked(nb, b.turnToPlay)) {
+            continue;
+        }
+        ans.push_back(s);
+    }
+    return ans;
 }
 
 vector<string> moveWhitePawn(const Board& b) {
@@ -231,12 +246,12 @@ vector<string> moveRook(bitboard r, bitboard same, bitboard diff) {
             if (!(empty >> j & 1ULL)) break;
         }
         // Move left
-        for (int j = i - 1; j / 8 == i / 8; j--) {
+        for (int j = i - 1; j >= 0 && j / 8 == i / 8; j--) {
             if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
             if (!(empty >> j & 1ULL)) break;
         }
         // Move right
-        for (int j = i + 1; j / 8 == i / 8; j++) {
+        for (int j = i + 1; j < 64 && j / 8 == i / 8; j++) {
             if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
             if (!(empty >> j & 1ULL)) break;
         }
@@ -384,6 +399,116 @@ vector<string> moveKnight(bitboard n, bitboard same, bitboard diff) {
         mask ^= 1ULL << i;
     }
     return ans;
+}
+
+bool checked(bitboard k, bitboard same, Side side, bitboard pawn,
+             bitboard rook, bitboard bishop, bitboard queen,
+             bitboard king, bitboard knight) {
+    assert(__builtin_popcountll(k) == 1);
+    bitboard mask = 0;
+    bitboard diff = pawn | rook | bishop | queen | king | knight;
+    bitboard empty = ~(same | diff);
+    
+    // Pawn capture in one move. Depends on side played
+    if (side == WHITE) {
+        mask = (pawn << 7) & same & ~COL7;
+        mask |= (pawn << 9) & same & ~COL0;
+    } else {
+        mask = (pawn >> 7) & same & ~COL0;
+        mask |= (pawn >> 9) & same & ~COL7;
+    }
+    
+    auto rookMove = [&](int i) -> void {
+        for (int j = i - 8; j >= 0; j -= 8) {
+            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
+            if (!(empty >> j & 1ULL)) break;
+        }
+        for (int j = i + 8; j < 64; j += 8) {
+            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
+            if (!(empty >> j & 1ULL)) break;
+        }
+        for (int j = i - 1; j >= 0 && j / 8 == i / 8; j--) {
+            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
+            if (!(empty >> j & 1ULL)) break;
+        }
+        for (int j = i + 1; j < 64 && j / 8 == i / 8; j++) {
+            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
+            if (!(empty >> j & 1ULL)) break;
+        }
+    };
+    auto bishopMove = [&](int i) -> void {
+        for (int x = i / 8 - 1, y = i % 8 - 1; x >= 0 && y >= 0; x--, y--) {
+            int j = x * 8 + y;
+            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
+            if (!(empty >> j & 1ULL)) break;
+        }
+        for (int x = i / 8 + 1, y = i % 8 - 1; x < 8 && y >= 0; x++, y--) {
+            int j = x * 8 + y;
+            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
+            if (!(empty >> j & 1ULL)) break;
+        }
+        for (int x = i / 8 - 1, y = i % 8 + 1; x >= 0 && y < 8; x--, y++) {
+            int j = x * 8 + y;
+            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
+            if (!(empty >> j & 1ULL)) break;
+        }
+        for (int x = i / 8 + 1, y = i % 8 + 1; x < 8 && y < 8; x++, y++) {
+            int j = x * 8 + y;
+            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
+            if (!(empty >> j & 1ULL)) break;
+        }
+    };
+    
+    // Rook, bishop, queen
+    while (rook) {
+        int i = __builtin_ctzll(rook);
+        rookMove(i);
+        rook ^= 1ULL << i;
+    }
+    while (bishop) {
+        int i = __builtin_ctzll(bishop);
+        bishopMove(i);
+        bishop ^= 1ULL << i;
+    }
+    while (queen) {
+        int i = __builtin_ctzll(queen);
+        rookMove(i);
+        bishopMove(i);
+        queen ^= 1ULL << i;
+    }
+    
+    // Knights and kings use hardcoded position values
+    mask |= (king >> 8) & ~diff;
+    mask |= (king >> 7) & ~diff & ~COL0;
+    mask |= (king << 1) & ~diff & ~COL0;
+    mask |= (king << 9) & ~diff & ~COL0;
+    mask |= (king << 8) & ~diff;
+    mask |= (king << 7) & ~diff & ~COL7;
+    mask |= (king >> 1) & ~diff & ~COL7;
+    mask |= (king >> 9) & ~diff & ~COL7;
+    
+    mask |= (knight >> 15) & ~diff & ~COL0;
+    mask |= (knight >> 6) & ~diff & ~COL01;
+    mask |= (knight << 10) & ~diff & ~COL01;
+    mask |= (knight << 17) & ~diff & ~COL0;
+    mask |= (knight << 15) & ~diff & ~COL7;
+    mask |= (knight << 6) & ~diff & COL67;
+    mask |= (knight >> 10) & ~diff & COL67;
+    mask |= (knight >> 17) & ~diff & ~COL7;
+    
+    return mask & k;
+}
+
+bool checked(const Board& b, const Side side) {
+    if (side == WHITE) {
+        return checked(b.whiteKing, b.whitePieces(), WHITE, b.blackPawn,
+                       b.blackRook, b.blackBishop, b.blackQueen,
+                       b.blackKing, b.blackKnight);
+    } else {
+        return checked(b.blackKing, b.blackPieces(), BLACK, b.whitePawn,
+                       b.whiteRook, b.whiteBishop, b.whiteQueen,
+                       b.whiteKing, b.whiteKnight);
+    }
 }
 
 template<typename T>

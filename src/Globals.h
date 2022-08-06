@@ -20,6 +20,8 @@ const unsigned long long ROW3 = 4278190080ULL;
 
 const unsigned long long COL0 = 72340172838076673ULL;
 const unsigned long long COL7 = 9259542123273814144ULL;
+const unsigned long long COL01 = 217020518514230019ULL;
+const unsigned long long COL67 = 13889313184910721216ULL;
 
 const vector<int> KNIGHT_SHIFTS = {};
 /*

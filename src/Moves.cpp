@@ -7,11 +7,11 @@ vector<string> pseudoLegal(const Board& b) {
     if (b.turnToPlay == WHITE) {
         return moveWhitePawn(b) + moveRook(b.whiteRook, wp, bp) +
                moveBishop(b.whiteBishop, wp, bp) + moveQueen(b.whiteQueen, wp, bp) +
-               moveKing(b.whiteKing, wp, bp) + moveKnight(b.whiteKnight, wp, bp);
+               moveWhiteKing(b) + moveKnight(b.whiteKnight, wp, bp);
     } else {
         return moveBlackPawn(b) + moveRook(b.blackRook, bp, wp) +
                moveBishop(b.blackBishop, bp, wp) + moveQueen(b.blackQueen, bp, wp) +
-               moveKing(b.blackKing, bp, wp) + moveKnight(b.blackKnight, bp, wp);
+               moveBlackKing(b) + moveKnight(b.blackKnight, bp, wp);
     }
 }
 
@@ -159,6 +159,62 @@ vector<string> moveBlackPawn(const Board& b) {
     return ans;
 }
 
+vector<string> moveWhiteKing(const Board& b) {
+    assert(__builtin_popcountll(b.whiteKing) == 1);
+    bitboard empty = ~(b.whitePieces() | b.blackPieces());
+    bitboard cango = empty | b.blackPieces();
+    vector<string> ans;
+    int i = __builtin_ctzll(b.whiteKing);
+    if ((b.whiteKing >> 8) & cango) ans.push_back(convert64(i) + convert64(i - 8));
+    if ((b.whiteKing >> 7) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i - 7));
+    if ((b.whiteKing << 1) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i + 1));
+    if ((b.whiteKing << 9) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i + 9));
+    if ((b.whiteKing << 8) & cango) ans.push_back(convert64(i) + convert64(i + 8));
+    if ((b.whiteKing << 7) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i + 7));
+    if ((b.whiteKing >> 1) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 1));
+    if ((b.whiteKing >> 9) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 9));
+    
+    if (b.whiteKingCastle) {
+        if ((empty >> 61 & 1) & (empty >> 62 & 1)) {
+            ans.push_back("e1g1");
+        }
+    }
+    if (b.whiteQueenCastle) {
+        if ((empty >> 57 & 1) & (empty >> 58 & 1) & (empty >> 59 & 1)) {
+            ans.push_back("e1c1");
+        }
+    }
+    return ans;
+}
+
+vector<string> moveBlackKing(const Board& b) {
+    assert(__builtin_popcountll(b.blackKing) == 1);
+    bitboard empty = ~(b.whitePieces() | b.blackPieces());
+    bitboard cango = empty | b.whitePieces();
+    vector<string> ans;
+    int i = __builtin_ctzll(b.blackKing);
+    if ((b.blackKing >> 8) & cango) ans.push_back(convert64(i) + convert64(i - 8));
+    if ((b.blackKing >> 7) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i - 7));
+    if ((b.blackKing << 1) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i + 1));
+    if ((b.blackKing << 9) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i + 9));
+    if ((b.blackKing << 8) & cango) ans.push_back(convert64(i) + convert64(i + 8));
+    if ((b.blackKing << 7) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i + 7));
+    if ((b.blackKing >> 1) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 1));
+    if ((b.blackKing >> 9) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 9));
+    
+    if (b.blackKingCastle) {
+        if ((empty >> 5 & 1) & (empty >> 6 & 1)) {
+            ans.push_back("e8g8");
+        }
+    }
+    if (b.blackQueenCastle) {
+        if ((empty >> 1 & 1) & (empty >> 2 & 1) & (empty >> 3 & 1)) {
+            ans.push_back("e8c8");
+        }
+    }
+    return ans;
+}
+
 vector<string> moveRook(bitboard r, bitboard same, bitboard diff) {
     vector<string> ans;
     bitboard empty = ~(same | diff);
@@ -272,24 +328,6 @@ vector<string> moveQueen(bitboard q, bitboard same, bitboard diff) {
         }
         q ^= 1ULL << i;
     }
-    return ans;
-}
-
-vector<string> moveKing(bitboard k, bitboard same, bitboard diff) {
-    assert(__builtin_popcountll(k) == 1);
-    bitboard empty = ~(same | diff);
-    bitboard cango = empty | diff;
-    vector<string> ans;
-    int i = __builtin_ctzll(k);
-    // Start from top and go clockwise
-    if ((k >> 8) & cango) ans.push_back(convert64(i) + convert64(i - 8));
-    if ((k >> 7) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i - 7));
-    if ((k << 1) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i + 1));
-    if ((k << 9) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i + 9));
-    if ((k << 8) & cango) ans.push_back(convert64(i) + convert64(i + 8));
-    if ((k << 7) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i + 7));
-    if ((k >> 1) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 1));
-    if ((k >> 9) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 9));
     return ans;
 }
 

@@ -43,6 +43,7 @@ struct Board {
 };
 
 Board boardFromFEN(const string&);
+Board doMove(const Board&, const string&);
 int convertAlgebraic(const string&);
 string convert64(int i);
 

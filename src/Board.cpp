@@ -193,6 +193,121 @@ Board boardFromFEN(const string& fen) {
     return Board(board, side, wkc, wqc, bkc, bqc, en, half, full);
 }
 
+Board doMove(const Board& b, const string& s) {
+    Board ans = b;
+    int f = convertAlgebraic(s.substr(0, 2)), t = convertAlgebraic(s.substr(2, 2));
+    bitboard bp = b.blackPieces();
+    ans.unset(f);
+    ans.unset(t);
+    ans.turnToPlay = (b.turnToPlay == WHITE ? BLACK : WHITE);
+    bool diff = (b.whiteOccupied(f) & b.blackOccupied(t)) |
+                (b.blackOccupied(f) & b.whiteOccupied(t));
+    
+    if (b.whitePawn >> f & 1ULL) {
+        if (t < 8) {
+            ans.set(ans.whiteQueen, t);
+            ans.enPassant = -1;
+        } else if (t == b.enPassant) {
+            ans.unset(t + 8);
+            ans.set(ans.whitePawn, t);
+            ans.enPassant = -1;
+        } else if (f - t == 16) {
+            ans.set(ans.whitePawn, t);
+            ans.enPassant = t + 8;
+        } else {
+            ans.set(ans.whitePawn, t);
+            ans.enPassant = -1;
+        }
+        ans.halfMove = 0;
+    } else if (b.blackPawn >> f & 1ULL) {
+        if (t >= 56) {
+            ans.set(ans.blackQueen, t);
+            ans.enPassant = -1;
+        } else if (t == b.enPassant) {
+            ans.unset(t - 8);
+            ans.set(ans.blackPawn, t);
+            ans.enPassant = -1;
+        } else if (t - f == 16) {
+            ans.set(ans.blackPawn, t);
+            ans.enPassant = t - 8;
+        } else {
+            ans.set(ans.blackPawn, t);
+            ans.enPassant = -1;
+        }
+        ans.halfMove = 0;
+        ans.fullMove++;
+    } else if (b.whiteKing >> f & 1ULL) {
+        int fc = f % 8, tc = t % 8;
+        if (abs(fc - tc) == 2) {
+            if (tc == 6) {
+                // King side castling for white
+                ans.set(ans.whiteKing, t);
+                ans.unset(63);
+                ans.set(ans.whiteRook, t - 1);
+            } else {
+                // Queen side castling for white
+                ans.set(ans.whiteKing, t);
+                ans.unset(56);
+                ans.set(ans.whiteRook, t + 1);
+            }
+            ans.halfMove++;
+        } else {
+            ans.set(ans.whiteKing, t);
+            ans.halfMove = diff ? 0 : ans.halfMove + 1;
+        }
+        ans.whiteKingCastle = ans.whiteQueenCastle = false;
+    } else if (b.blackKing >> f & 1ULL) {
+        int fc = f % 8, tc = t % 8;
+        if (abs(fc - tc) == 2) {
+            if (tc == 6) {
+                ans.set(ans.blackKing, t);
+                ans.unset(7);
+                ans.set(ans.blackRook, t - 1);
+            } else {
+                ans.set(ans.blackKing, t);
+                ans.unset(0);
+                ans.set(ans.blackRook, t + 1);
+            }
+            ans.halfMove++;
+        } else {
+            ans.set(ans.blackKing, t);
+            ans.halfMove = diff ? 0 : ans.halfMove + 1;
+        }
+        ans.blackKingCastle = ans.blackQueenCastle = false;
+        ans.fullMove++;
+    } else if (b.whiteRook >> f & 1ULL) {
+        if (ans.whiteKingCastle & (f == 63)) {
+            ans.whiteKingCastle = false;
+        }
+        if (ans.whiteQueenCastle & (f == 56)) {
+            ans.whiteQueenCastle = false;
+        }
+        ans.set(ans.whiteRook, t);
+        ans.halfMove = diff ? 0 : ans.halfMove + 1;
+    } else if (b.blackRook >> f & 1ULL) {
+        if (ans.blackKingCastle & (f == 7)) {
+            ans.blackKingCastle = false;
+        }
+        if (ans.blackQueenCastle & (f == 0)) {
+            ans.blackQueenCastle = false;
+        }
+        ans.halfMove = diff ? 0 : ans.halfMove + 1;
+        ans.fullMove++;
+    } else {
+        // Easy. Just move and mark if capture something
+        if (b.whiteBishop >> f & 1ULL) ans.set(ans.whiteBishop, t);
+        else if (b.blackBishop >> f & 1ULL) ans.set(ans.blackBishop, t);
+        else if (b.whiteQueen >> f & 1ULL) ans.set(ans.whiteQueen, t);
+        else if (b.blackQueen >> f & 1ULL) ans.set(ans.blackQueen, t);
+        else if (b.whiteKnight >> f & 1ULL) ans.set(ans.whiteKnight, t);
+        else ans.set(ans.blackKnight, t);
+        
+        ans.halfMove = diff ? 0 : ans.halfMove + 1;
+        if (bp >> t & 1ULL) ans.fullMove++;
+    }
+    return ans;
+}
+
 int convertAlgebraic(const string& s) {
     int r = 8 - (s[1] - '0'), c = s[0] - 'a';
     return 8 * r + c;

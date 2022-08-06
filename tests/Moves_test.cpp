@@ -3,9 +3,10 @@
 using namespace std;
 
 int main() {
-    Board a = boardFromFEN("r3kbnr/ppp2ppp/2nq4/3ppb2/2B1P2N/2P3P1/PP1P1P1P/RNBQK2R b KQkq - 0 6");
-    auto v = pseudoLegal(a);
-    for (auto& s : v) {
-        cout << s << '\n';
+    Board a = boardFromFEN("rnbq1bnr/ppp1kppp/8/1B1pp3/4P3/5N2/PPPP1PPP/RNBQK2R w KQ - 2 4");
+    auto ms = pseudoLegal(a);
+    for (auto& m : ms) {
+        cout << m << '\n';
+        cout << doMove(a, m);
     }
 }

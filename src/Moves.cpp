@@ -196,14 +196,22 @@ vector<string> moveWhiteKing(const Board& b) {
     if ((b.whiteKing >> 1) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 1));
     if ((b.whiteKing >> 9) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 9));
     
+    bitboard safe = ~unsafe(b.whitePieces(), WHITE, b.blackPawn,
+                         b.blackRook, b.blackBishop, b.blackQueen,
+                         b.blackKing, b.blackKnight);
+                         
     if (b.whiteKingCastle) {
-        if ((empty >> 61 & 1) & (empty >> 62 & 1)) {
-            ans.push_back("e1g1");
+        if ((empty >> 61 & 1ULL) & (empty >> 62 & 1ULL)) {
+            if ((safe >> 60 & 1ULL) & (safe >> 61 & 1ULL) & (safe >> 62 & 1ULL)) {
+                ans.push_back("e1g1");
+            }
         }
     }
     if (b.whiteQueenCastle) {
-        if ((empty >> 57 & 1) & (empty >> 58 & 1) & (empty >> 59 & 1)) {
-            ans.push_back("e1c1");
+        if ((empty >> 57 & 1ULL) & (empty >> 58 & 1ULL) & (empty >> 59 & 1ULL)) {
+            if ((safe >> 58 & 1ULL) & (safe >> 59 & 1ULL) & (safe >> 60 & 1ULL)) {
+                ans.push_back("e1c1");
+            }
         }
     }
     return ans;
@@ -224,14 +232,22 @@ vector<string> moveBlackKing(const Board& b) {
     if ((b.blackKing >> 1) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 1));
     if ((b.blackKing >> 9) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 9));
     
+    bitboard safe = ~unsafe(b.blackPieces(), BLACK, b.whitePawn,
+                            b.whiteRook, b.whiteBishop, b.whiteQueen,
+                            b.whiteKing, b.whiteKnight);
+    
     if (b.blackKingCastle) {
-        if ((empty >> 5 & 1) & (empty >> 6 & 1)) {
-            ans.push_back("e8g8");
+        if ((empty >> 5 & 1ULL) & (empty >> 6 & 1ULL)) {
+            if ((safe >> 4 & 1ULL) & (safe >> 5 & 1ULL) & (safe >> 6 & 1ULL)) {
+                ans.push_back("e8g8");
+            }
         }
     }
     if (b.blackQueenCastle) {
-        if ((empty >> 1 & 1) & (empty >> 2 & 1) & (empty >> 3 & 1)) {
-            ans.push_back("e8c8");
+        if ((empty >> 1 & 1ULL) & (empty >> 2 & 1ULL) & (empty >> 3 & 1ULL)) {
+            if ((safe >> 2 & 1ULL) & (safe >> 3 & 1ULL) & (safe >> 4 & 1ULL)) {
+                ans.push_back("e8c8");
+            }
         }
     }
     return ans;
@@ -248,7 +264,7 @@ vector<string> moveRook(bitboard r, bitboard same, bitboard diff) {
             if (!(empty >> j & 1ULL)) break;
         }
         // Move down
-        for (int j = i + 8; j < 63; j += 8) {
+        for (int j = i + 8; j < 64; j += 8) {
             if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
             if (!(empty >> j & 1ULL)) break;
         }
@@ -311,7 +327,7 @@ vector<string> moveQueen(bitboard q, bitboard same, bitboard diff) {
             if (!(empty >> j & 1ULL)) break;
         }
         // Move down
-        for (int j = i + 8; j < 63; j += 8) {
+        for (int j = i + 8; j < 64; j += 8) {
             if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
             if (!(empty >> j & 1ULL)) break;
         }
@@ -408,21 +424,20 @@ vector<string> moveKnight(bitboard n, bitboard same, bitboard diff) {
     return ans;
 }
 
-bool checked(bitboard k, bitboard same, Side side, bitboard pawn,
+bitboard unsafe(bitboard same, Side side, bitboard pawn,
              bitboard rook, bitboard bishop, bitboard queen,
              bitboard king, bitboard knight) {
-    assert(__builtin_popcountll(k) == 1);
     bitboard mask = 0;
     bitboard diff = pawn | rook | bishop | queen | king | knight;
     bitboard empty = ~(same | diff);
     
     // Pawn capture in one move. Depends on side played
     if (side == WHITE) {
-        mask = (pawn << 7) & same & ~COL7;
-        mask |= (pawn << 9) & same & ~COL0;
+        mask = (pawn << 7) & ~diff & ~COL7;
+        mask |= (pawn << 9) & ~diff & ~COL0;
     } else {
-        mask = (pawn >> 7) & same & ~COL0;
-        mask |= (pawn >> 9) & same & ~COL7;
+        mask = (pawn >> 7) & ~diff & ~COL0;
+        mask |= (pawn >> 9) & ~diff & ~COL7;
     }
     
     auto rookMove = [&](int i) -> void {
@@ -499,22 +514,24 @@ bool checked(bitboard k, bitboard same, Side side, bitboard pawn,
     mask |= (knight << 10) & ~diff & ~COL01;
     mask |= (knight << 17) & ~diff & ~COL0;
     mask |= (knight << 15) & ~diff & ~COL7;
-    mask |= (knight << 6) & ~diff & COL67;
-    mask |= (knight >> 10) & ~diff & COL67;
+    mask |= (knight << 6) & ~diff & ~COL67;
+    mask |= (knight >> 10) & ~diff & ~COL67;
     mask |= (knight >> 17) & ~diff & ~COL7;
     
-    return mask & k;
+    return mask;
 }
 
 bool checked(const Board& b, const Side side) {
     if (side == WHITE) {
-        return checked(b.whiteKing, b.whitePieces(), WHITE, b.blackPawn,
-                       b.blackRook, b.blackBishop, b.blackQueen,
-                       b.blackKing, b.blackKnight);
+        assert(__builtin_popcountll(b.whiteKing) == 1);
+        return b.whiteKing & unsafe(b.whitePieces(), WHITE, b.blackPawn,
+                                    b.blackRook, b.blackBishop, b.blackQueen,
+                                    b.blackKing, b.blackKnight);
     } else {
-        return checked(b.blackKing, b.blackPieces(), BLACK, b.whitePawn,
-                       b.whiteRook, b.whiteBishop, b.whiteQueen,
-                       b.whiteKing, b.whiteKnight);
+        assert(__builtin_popcountll(b.blackKing) == 1);
+        return b.blackKing & unsafe(b.blackPieces(), BLACK, b.whitePawn,
+                                    b.whiteRook, b.whiteBishop, b.whiteQueen,
+                                    b.whiteKing, b.whiteKnight);
     }
 }
 

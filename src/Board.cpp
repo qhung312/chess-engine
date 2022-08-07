@@ -196,7 +196,6 @@ Board boardFromFEN(const string& fen) {
 Board doMove(const Board& b, const string& s) {
     Board ans = b;
     int f = convertAlgebraic(s.substr(0, 2)), t = convertAlgebraic(s.substr(2, 2));
-    bitboard bp = b.blackPieces();
     ans.unset(f);
     ans.unset(t);
     ans.turnToPlay = (b.turnToPlay == WHITE ? BLACK : WHITE);
@@ -294,6 +293,7 @@ Board doMove(const Board& b, const string& s) {
         if (ans.blackQueenCastle & (f == 0)) {
             ans.blackQueenCastle = false;
         }
+        ans.set(ans.blackRook, t);
         ans.halfMove = diff ? 0 : ans.halfMove + 1;
         ans.fullMove++;
         ans.enPassant = -1;
@@ -307,7 +307,7 @@ Board doMove(const Board& b, const string& s) {
         else ans.set(ans.blackKnight, t);
         
         ans.halfMove = diff ? 0 : ans.halfMove + 1;
-        if (bp >> f & 1ULL) ans.fullMove++;
+        if (ans.turnToPlay == WHITE) ans.fullMove++; // it was switch over from black
         ans.enPassant = -1;
     }
     

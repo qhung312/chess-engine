@@ -23,7 +23,7 @@ vector<string> moveBishop(bitboard, bitboard, bitboard);
 vector<string> moveQueen(bitboard, bitboard, bitboard);
 vector<string> moveKnight(bitboard, bitboard, bitboard);
 
-bool checked(bitboard, bitboard, Side, bitboard, bitboard, bitboard, bitboard, bitboard, bitboard);
+bitboard unsafe(bitboard, Side, bitboard, bitboard, bitboard, bitboard, bitboard, bitboard);
 bool checked(const Board&, const Side);
 
 // Helper function to concatenate vectors

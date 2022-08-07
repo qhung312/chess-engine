@@ -1,6 +1,7 @@
 #include "Moves.h"
 #include "Board.h"
 #include "Globals.h"
+#include "Bitwise.h"
 #include <cassert>
 
 vector<string> pseudoLegal(const Board& b) {
@@ -184,17 +185,14 @@ vector<string> moveBlackPawn(const Board& b) {
 vector<string> moveWhiteKing(const Board& b) {
     assert(__builtin_popcountll(b.whiteKing) == 1);
     bitboard empty = ~(b.whitePieces() | b.blackPieces());
-    bitboard cango = ~b.whitePieces();
     vector<string> ans;
     int i = __builtin_ctzll(b.whiteKing);
-    if ((b.whiteKing >> 8) & cango) ans.push_back(convert64(i) + convert64(i - 8));
-    if ((b.whiteKing >> 7) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i - 7));
-    if ((b.whiteKing << 1) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i + 1));
-    if ((b.whiteKing << 9) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i + 9));
-    if ((b.whiteKing << 8) & cango) ans.push_back(convert64(i) + convert64(i + 8));
-    if ((b.whiteKing << 7) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i + 7));
-    if ((b.whiteKing >> 1) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 1));
-    if ((b.whiteKing >> 9) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 9));
+    bitboard can = kingMask(b.whiteKing, b.whitePieces());
+    while (can) {
+        int j = __builtin_ctzll(can);
+        ans.push_back(convert64(i) + convert64(j));
+        can ^= 1ULL << j;
+    }
     
     bitboard safe = ~unsafe(b.whitePieces(), WHITE, b.blackPawn,
                          b.blackRook, b.blackBishop, b.blackQueen,
@@ -220,17 +218,14 @@ vector<string> moveWhiteKing(const Board& b) {
 vector<string> moveBlackKing(const Board& b) {
     assert(__builtin_popcountll(b.blackKing) == 1);
     bitboard empty = ~(b.whitePieces() | b.blackPieces());
-    bitboard cango = ~b.blackPieces();
     vector<string> ans;
     int i = __builtin_ctzll(b.blackKing);
-    if ((b.blackKing >> 8) & cango) ans.push_back(convert64(i) + convert64(i - 8));
-    if ((b.blackKing >> 7) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i - 7));
-    if ((b.blackKing << 1) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i + 1));
-    if ((b.blackKing << 9) & cango & ~COL0) ans.push_back(convert64(i) + convert64(i + 9));
-    if ((b.blackKing << 8) & cango) ans.push_back(convert64(i) + convert64(i + 8));
-    if ((b.blackKing << 7) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i + 7));
-    if ((b.blackKing >> 1) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 1));
-    if ((b.blackKing >> 9) & cango & ~COL7) ans.push_back(convert64(i) + convert64(i - 9));
+    bitboard can = kingMask(b.blackKing, b.blackPieces());
+    while (can) {
+        int j = __builtin_ctzll(can);
+        ans.push_back(convert64(i) + convert64(j));
+        can ^= 1ULL << j;
+    }
     
     bitboard safe = ~unsafe(b.blackPieces(), BLACK, b.whitePawn,
                             b.whiteRook, b.whiteBishop, b.whiteQueen,
@@ -255,28 +250,13 @@ vector<string> moveBlackKing(const Board& b) {
 
 vector<string> moveRook(bitboard r, bitboard same, bitboard diff) {
     vector<string> ans;
-    bitboard empty = ~(same | diff);
     while (r) {
         int i = __builtin_ctzll(r);
-        // Move up
-        for (int j = i - 8; j >= 0; j -= 8) {
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Move down
-        for (int j = i + 8; j < 64; j += 8) {
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Move left
-        for (int j = i - 1; j >= 0 && j / 8 == i / 8; j--) {
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Move right
-        for (int j = i + 1; j < 64 && j / 8 == i / 8; j++) {
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
+        bitboard can = rookMask(1ULL << i, same, diff);
+        while (can) {
+            int j = __builtin_ctzll(can);
+            ans.push_back(convert64(i) + convert64(j));
+            can ^= 1ULL << j;
         }
         r ^= 1ULL << i;
     }
@@ -285,32 +265,13 @@ vector<string> moveRook(bitboard r, bitboard same, bitboard diff) {
 
 vector<string> moveBishop(bitboard b, bitboard same, bitboard diff) {
     vector<string> ans;
-    bitboard empty = ~(same | diff);
     while (b) {
         int i = __builtin_ctzll(b);
-        // Left up
-        for (int x = i / 8 - 1, y = i % 8 - 1; x >= 0 && y >= 0; x--, y--) {
-            int j = x * 8 + y;
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Left down
-        for (int x = i / 8 + 1, y = i % 8 - 1; x < 8 && y >= 0; x++, y--) {
-            int j = x * 8 + y;
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Right up
-        for (int x = i / 8 - 1, y = i % 8 + 1; x >= 0 && y < 8; x--, y++) {
-            int j = x * 8 + y;
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Right down
-        for (int x = i / 8 + 1, y = i % 8 + 1; x < 8 && y < 8; x++, y++) {
-            int j = x * 8 + y;
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
+        bitboard can = bishopMask(1ULL << i, same, diff);
+        while (can) {
+            int j = __builtin_ctzll(can);
+            ans.push_back(convert64(i) + convert64(j));
+            can ^= 1ULL << j;
         }
         b ^= 1ULL << i;
     }
@@ -319,50 +280,13 @@ vector<string> moveBishop(bitboard b, bitboard same, bitboard diff) {
 
 vector<string> moveQueen(bitboard q, bitboard same, bitboard diff) {
     vector<string> ans;
-    bitboard empty = ~(same | diff);
     while (q) {
         int i = __builtin_ctzll(q);
-        for (int j = i - 8; j >= 0; j -= 8) {
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Move down
-        for (int j = i + 8; j < 64; j += 8) {
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Move left
-        for (int j = i - 1; j >= 0 && j / 8 == i / 8; j--) {
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Move right
-        for (int j = i + 1; j < 64 && j / 8 == i / 8; j++) {
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }// Left up
-        for (int x = i / 8 - 1, y = i % 8 - 1; x >= 0 && y >= 0; x--, y--) {
-            int j = x * 8 + y;
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Left down
-        for (int x = i / 8 + 1, y = i % 8 - 1; x < 8 && y >= 0; x++, y--) {
-            int j = x * 8 + y;
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Right up
-        for (int x = i / 8 - 1, y = i % 8 + 1; x >= 0 && y < 8; x--, y++) {
-            int j = x * 8 + y;
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
-        }
-        // Right down
-        for (int x = i / 8 + 1, y = i % 8 + 1; x < 8 && y < 8; x++, y++) {
-            int j = x * 8 + y;
-            if (!(same >> j & 1ULL)) ans.push_back(convert64(i) + convert64(j));
-            if (!(empty >> j & 1ULL)) break;
+        bitboard can = queenMask(1ULL << i, same, diff);
+        while (can) {
+            int j = __builtin_ctzll(can);
+            ans.push_back(convert64(i) + convert64(j));
+            can ^= 1ULL << j;
         }
         q ^= 1ULL << i;
     }
@@ -371,55 +295,15 @@ vector<string> moveQueen(bitboard q, bitboard same, bitboard diff) {
 
 vector<string> moveKnight(bitboard n, bitboard same, bitboard diff) {
     vector<string> ans;
-    bitboard empty = ~(same | diff);
-    bitboard cango = ~same;
-    bitboard mask = (n >> 15) & cango & ~COL0;
-    while (mask) {
-        int i = __builtin_ctzll(mask);
-        ans.push_back(convert64(i + 15) + convert64(i));
-        mask ^= 1ULL << i;
-    }
-    mask = (n >> 6) & cango & ~COL01;
-    while (mask) {
-        int i = __builtin_ctzll(mask);
-        ans.push_back(convert64(i + 6) + convert64(i));
-        mask ^= 1ULL << i;
-    }
-    mask = (n << 10) & cango & ~COL01;
-    while (mask) {
-        int i = __builtin_ctzll(mask);
-        ans.push_back(convert64(i - 10) + convert64(i));
-        mask ^= 1ULL << i;
-    }
-    mask = (n << 17) & cango & ~COL0;
-    while (mask) {
-        int i = __builtin_ctzll(mask);
-        ans.push_back(convert64(i - 17) + convert64(i));
-        mask ^= 1ULL << i;
-    }
-    mask = (n << 15) & cango & ~COL7;
-    while (mask) {
-        int i = __builtin_ctzll(mask);
-        ans.push_back(convert64(i - 15) + convert64(i));
-        mask ^= 1ULL << i;
-    }
-    mask = (n << 6) & cango & ~COL67;
-    while (mask) {
-        int i = __builtin_ctzll(mask);
-        ans.push_back(convert64(i - 6) + convert64(i));
-        mask ^= 1ULL << i;
-    }
-    mask = (n >> 10) & cango & ~COL67;
-    while (mask) {
-        int i = __builtin_ctzll(mask);
-        ans.push_back(convert64(i + 10) + convert64(i));
-        mask ^= 1ULL << i;
-    }
-    mask = (n >> 17) & cango & ~COL7;
-    while (mask) {
-        int i = __builtin_ctzll(mask);
-        ans.push_back(convert64(i + 17) + convert64(i));
-        mask ^= 1ULL << i;
+    while (n) {
+        int i = __builtin_ctzll(n);
+        bitboard can = knightMask(1ULL << i, same);
+        while (can) {
+            int j = __builtin_ctzll(can);
+            ans.push_back(convert64(i) + convert64(j));
+            can ^= 1ULL << j;
+        }
+        n ^= 1ULL << i;
     }
     return ans;
 }
@@ -440,83 +324,14 @@ bitboard unsafe(bitboard same, Side side, bitboard pawn,
         mask |= (pawn >> 9) & ~diff & ~COL7;
     }
     
-    auto rookMove = [&](int i) -> void {
-        for (int j = i - 8; j >= 0; j -= 8) {
-            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
-            if (!(empty >> j & 1ULL)) break;
-        }
-        for (int j = i + 8; j < 64; j += 8) {
-            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
-            if (!(empty >> j & 1ULL)) break;
-        }
-        for (int j = i - 1; j >= 0 && j / 8 == i / 8; j--) {
-            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
-            if (!(empty >> j & 1ULL)) break;
-        }
-        for (int j = i + 1; j < 64 && j / 8 == i / 8; j++) {
-            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
-            if (!(empty >> j & 1ULL)) break;
-        }
-    };
-    auto bishopMove = [&](int i) -> void {
-        for (int x = i / 8 - 1, y = i % 8 - 1; x >= 0 && y >= 0; x--, y--) {
-            int j = x * 8 + y;
-            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
-            if (!(empty >> j & 1ULL)) break;
-        }
-        for (int x = i / 8 + 1, y = i % 8 - 1; x < 8 && y >= 0; x++, y--) {
-            int j = x * 8 + y;
-            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
-            if (!(empty >> j & 1ULL)) break;
-        }
-        for (int x = i / 8 - 1, y = i % 8 + 1; x >= 0 && y < 8; x--, y++) {
-            int j = x * 8 + y;
-            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
-            if (!(empty >> j & 1ULL)) break;
-        }
-        for (int x = i / 8 + 1, y = i % 8 + 1; x < 8 && y < 8; x++, y++) {
-            int j = x * 8 + y;
-            if (!(diff >> j & 1ULL)) mask |= 1ULL << j;
-            if (!(empty >> j & 1ULL)) break;
-        }
-    };
+    // Rook, bishop and queen
+    mask |= rookMask(rook, diff, same);
+    mask |= bishopMask(bishop, diff, same);
+    mask |= queenMask(queen, diff, same);
     
-    // Rook, bishop, queen
-    while (rook) {
-        int i = __builtin_ctzll(rook);
-        rookMove(i);
-        rook ^= 1ULL << i;
-    }
-    while (bishop) {
-        int i = __builtin_ctzll(bishop);
-        bishopMove(i);
-        bishop ^= 1ULL << i;
-    }
-    while (queen) {
-        int i = __builtin_ctzll(queen);
-        rookMove(i);
-        bishopMove(i);
-        queen ^= 1ULL << i;
-    }
-    
-    // Knights and kings use hardcoded position values
-    mask |= (king >> 8) & ~diff;
-    mask |= (king >> 7) & ~diff & ~COL0;
-    mask |= (king << 1) & ~diff & ~COL0;
-    mask |= (king << 9) & ~diff & ~COL0;
-    mask |= (king << 8) & ~diff;
-    mask |= (king << 7) & ~diff & ~COL7;
-    mask |= (king >> 1) & ~diff & ~COL7;
-    mask |= (king >> 9) & ~diff & ~COL7;
-    
-    mask |= (knight >> 15) & ~diff & ~COL0;
-    mask |= (knight >> 6) & ~diff & ~COL01;
-    mask |= (knight << 10) & ~diff & ~COL01;
-    mask |= (knight << 17) & ~diff & ~COL0;
-    mask |= (knight << 15) & ~diff & ~COL7;
-    mask |= (knight << 6) & ~diff & ~COL67;
-    mask |= (knight >> 10) & ~diff & ~COL67;
-    mask |= (knight >> 17) & ~diff & ~COL7;
+    // Knights and kings
+    mask |= kingMask(king, diff);
+    mask |= knightMask(knight, diff);
     
     return mask;
 }
@@ -537,8 +352,9 @@ bool checked(const Board& b, const Side side) {
 
 template<typename T>
 vector<T> operator+(const vector<T>& a, const vector<T>& b) {
-    vector<T> ans = a;
+    vector<T> ans;
     ans.reserve(a.size() + b.size());
+    for (auto& x : a) ans.push_back(x);
     for (auto& x : b) ans.push_back(x);
     return ans;
 }

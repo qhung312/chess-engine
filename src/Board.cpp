@@ -105,23 +105,23 @@ bool Board::occupied(int i) const {
 }
 
 void Board::set(bitboard& b, int i) {
-    if (!(b >> i & 1)) b ^= (1ULL << i);
+    b |= 1ULL << i;
 }
 
 void Board::unset(int i) {
-    if (whiteKing >> i & 1ULL) whiteKing ^= 1ULL << i;
-    if (whiteRook >> i & 1ULL) whiteRook ^= 1ULL << i;
-    if (whiteBishop >> i & 1ULL) whiteBishop ^= 1ULL << i;
-    if (whiteQueen >> i & 1ULL) whiteQueen ^= 1ULL << i;
-    if (whiteKnight >> i & 1ULL) whiteKnight ^= 1ULL << i;
-    if (whitePawn >> i & 1ULL) whitePawn ^= 1ULL << i;
+    whiteKing &= ~(1ULL << i);
+    whiteRook &= ~(1ULL << i);
+    whiteBishop &= ~(1ULL << i);
+    whiteQueen &= ~(1ULL << i);
+    whiteKnight &= ~(1ULL << i);
+    whitePawn &= ~(1ULL << i);
     
-    if (blackKing >> i & 1ULL) blackKing ^= 1ULL << i;
-    if (blackRook >> i & 1ULL) blackRook ^= 1ULL << i;
-    if (blackBishop >> i & 1ULL) blackBishop ^= 1ULL << i;
-    if (blackQueen >> i & 1ULL) blackQueen ^= 1ULL << i;
-    if (blackKnight >> i & 1ULL) blackKnight ^= 1ULL << i;
-    if (blackPawn >> i & 1ULL) blackPawn ^= 1ULL << i;
+    blackKing &= ~(1ULL << i);
+    blackRook &= ~(1ULL << i);
+    blackBishop &= ~(1ULL << i);
+    blackQueen &= ~(1ULL << i);
+    blackKnight &= ~(1ULL << i);
+    blackPawn &= ~(1ULL << i);
 }
 
 ostream& operator<<(ostream& out, const Board& board) {

@@ -21,10 +21,12 @@ bitboard southEast(bitboard, bitboard, bitboard);
 bitboard southWest(bitboard, bitboard, bitboard);
 bitboard northWest(bitboard, bitboard, bitboard);
 
-// Specific functions for rook, bishop and queen movements that remove the original bits
+// Specific functions for each pieces' movements that remove the original bits
 // before returning the answer
 bitboard rookMask(bitboard, bitboard, bitboard);
 bitboard bishopMask(bitboard, bitboard, bitboard);
 bitboard queenMask(bitboard, bitboard, bitboard);
 bitboard knightMask(bitboard, bitboard);
 bitboard kingMask(bitboard, bitboard);
+bitboard whitePawnMask(bitboard, bitboard, bitboard, int);
+bitboard blackPawnMask(bitboard, bitboard, bitboard, int);

@@ -33,152 +33,39 @@ vector<string> legalMoves(const Board& b) {
 
 vector<string> moveWhitePawn(const Board& b) {
     vector<string> ans;
+    bitboard p = b.whitePawn;
     bitboard white = b.whitePieces();
     bitboard black = b.blackPieces();
-    bitboard empty = ~(white | black);
     
-    // Capture left and right without promoting
-    bitboard captureLeft = (b.whitePawn >> 9) & black & ~ROW0 & ~COL7;
-    while (captureLeft) {
-        int i = __builtin_ctzll(captureLeft);
-        ans.push_back(convert64(i + 9) + convert64(i));
-        captureLeft ^= 1ULL << i;
-    }
-    bitboard captureRight = (b.whitePawn >> 7) & black & ~ROW0 & ~COL0;
-    while (captureRight) {
-        int i = __builtin_ctzll(captureRight);
-        ans.push_back(convert64(i + 7) + convert64(i));
-        captureRight ^= 1ULL << i;
-    }
-    
-    // Move 1 forward
-    bitboard oneForward = (b.whitePawn >> 8) & empty & ~ROW0;
-    while (oneForward) {
-        int i = __builtin_ctzll(oneForward);
-        ans.push_back(convert64(i + 8) + convert64(i));
-        oneForward ^= 1ULL << i;
-    }
-    
-    // Move 2 forward
-    bitboard twoForward = (b.whitePawn >> 16) & empty & (empty >> 8) & ROW4;
-    while (twoForward) {
-        int i = __builtin_ctzll(twoForward);
-        ans.push_back(convert64(i + 16) + convert64(i));
-        twoForward ^= 1ULL << i;
-    }
-    
-    // Left capture to promote (always queen)
-    bitboard leftPromote = (b.whitePawn >> 9) & black & ROW0 & ~COL7;
-    while (leftPromote) {
-        int i = __builtin_ctzll(leftPromote);
-        ans.push_back(convert64(i + 9) + convert64(i) + "q");
-        leftPromote ^= 1ULL << i;
-    }
-    // Right capture to promote (always queen)
-    bitboard rightPromote = (b.whitePawn >> 7) & black & ROW0 & ~COL0;
-    while (rightPromote) {
-        int i = __builtin_ctzll(rightPromote);
-        ans.push_back(convert64(i + 7) + convert64(i) + "q");
-        rightPromote ^= 1ULL << i;
-    }
-    
-    // Move 1 forward to promote (always queen)
-    bitboard onePromote = (b.whitePawn >> 8) & empty & ROW0;
-    while (onePromote) {
-        int i = __builtin_ctzll(onePromote);
-        ans.push_back(convert64(i + 8) + convert64(i) + "q");
-        onePromote ^= 1ULL << i;
-    }
-    
-    // en passant left and right
-    if (b.enPassant != -1) {
-        bitboard enLeft = (b.whitePawn >> 9) & (1ULL << b.enPassant) & ~COL7;
-        if (enLeft) {
-            int i = b.enPassant;
-            ans.push_back(convert64(i + 9) + convert64(i));
+    while (p) {
+        int i = __builtin_ctzll(p);
+        bitboard can = whitePawnMask(1ULL << i, white, black, b.enPassant);
+        while (can) {
+            int j = __builtin_ctzll(can);
+            ans.push_back(convert64(i) + convert64(j));
+            can ^= 1ULL << j;
         }
-        bitboard enRight = (b.whitePawn >> 7) & (1ULL << b.enPassant) & ~COL0;
-        if (enRight) {
-            int i = b.enPassant;
-            ans.push_back(convert64(i + 7) + convert64(i));
-        }
+        p ^= 1ULL << i;
     }
-    
     return ans;
 }
 
 vector<string> moveBlackPawn(const Board& b) {
     vector<string> ans;
+    bitboard p = b.blackPawn;
     bitboard white = b.whitePieces();
     bitboard black = b.blackPieces();
-    bitboard empty = ~(white | black);
     
-    // Capture left and right without promoting
-    bitboard captureLeft = (b.blackPawn << 7) & white & ~ROW7 & ~COL7;
-    while (captureLeft) {
-        int i = __builtin_ctzll(captureLeft);
-        ans.push_back(convert64(i - 7) + convert64(i));
-        captureLeft ^= 1ULL << i;
-    }
-    bitboard captureRight = (b.blackPawn << 9) & white & ~ROW7 & ~COL0;
-    while (captureRight) {
-        int i = __builtin_ctzll(captureRight);
-        ans.push_back(convert64(i - 9) + convert64(i));
-        captureRight ^= 1ULL << i;
-    }
-    
-    // Move 1 forward
-    bitboard oneForward = (b.blackPawn << 8) & empty & ~ROW7;
-    while (oneForward) {
-        int i = __builtin_ctzll(oneForward);
-        ans.push_back(convert64(i - 8) + convert64(i));
-        oneForward ^= 1ULL << i;
-    }
-    
-    // Move 2 forward
-    bitboard twoForward = (b.blackPawn << 16) & empty & (empty << 8) & ROW3;
-    while (twoForward) {
-        int i = __builtin_ctzll(twoForward);
-        ans.push_back(convert64(i - 16) + convert64(i));
-        twoForward ^= 1ULL << i;
-    }
-    
-    // Left capture to promote (always queen)
-    bitboard leftPromote = (b.blackPawn << 7) & white & ROW7 & ~COL7;
-    while (leftPromote) {
-        int i = __builtin_ctzll(leftPromote);
-        ans.push_back(convert64(i - 7) + convert64(i) + "q");
-        leftPromote ^= 1ULL << i;
-    }
-    // Right capture to promote (always queen)
-    bitboard rightPromote = (b.blackPawn << 9) & white & ROW7 & ~COL0;
-    while (rightPromote) {
-        int i = __builtin_ctzll(rightPromote);
-        ans.push_back(convert64(i - 9) + convert64(i) + "q");
-        rightPromote ^= 1ULL << i;
-    }
-    // move once to promote (always queen)
-    bitboard onePromote = (b.blackPawn << 8) & empty & ROW7;
-    while (onePromote) {
-        int i = __builtin_ctzll(onePromote);
-        ans.push_back(convert64(i - 8) + convert64(i) + "q");
-        onePromote ^= 1ULL << i;
-    }
-    
-    // En passant
-    if (b.enPassant != -1) {
-        bitboard enLeft = (b.blackPawn << 7) & (1ULL << b.enPassant) & ~COL7;
-        if (enLeft) {
-            int i = b.enPassant;
-            ans.push_back(convert64(i - 7) + convert64(i));
+    while (p) {
+        int i = __builtin_ctzll(p);
+        bitboard can = blackPawnMask(1ULL << i, black, white, b.enPassant);
+        while (can) {
+            int j = __builtin_ctzll(can);
+            ans.push_back(convert64(i) + convert64(j));
+            can ^= 1ULL << j;
         }
-        bitboard enRight = (b.blackPawn << 9) & (1ULL << b.enPassant) & ~COL0;
-        if (enRight) {
-            int i = b.enPassant;
-            ans.push_back(convert64(i - 9) + convert64(i));
-        }
+        p ^= 1ULL << i;
     }
-    
     return ans;
 }
 
@@ -313,7 +200,6 @@ bitboard unsafe(bitboard same, Side side, bitboard pawn,
              bitboard king, bitboard knight) {
     bitboard mask = 0;
     bitboard diff = pawn | rook | bishop | queen | king | knight;
-    bitboard empty = ~(same | diff);
     
     // Pawn capture in one move. Depends on side played
     if (side == WHITE) {

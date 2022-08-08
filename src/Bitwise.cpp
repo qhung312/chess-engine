@@ -152,3 +152,31 @@ bitboard kingMask(bitboard x, bitboard same) {
     mask |= (x >> 9) & ~same & ~COL7;
     return mask ^ x;
 }
+
+bitboard whitePawnMask(bitboard x, bitboard same, bitboard diff, int en) {
+    bitboard mask = x;
+    bitboard empty = ~(same | diff);
+    mask |= (x >> 9) & diff & ~COL7; // Capture left, may or may not promote
+    mask |= (x >> 7) & diff & ~COL0; // Capture right, may or may not promote
+    mask |= (x >> 8) & empty; // Forward once, may or may not promote
+    mask |= (x >> 16) & empty & (empty >> 8) & ROW4; // Forward two cells
+    if (en != -1) {
+        mask |= (x >> 9) & (1ULL << en) & ~COL7;
+        mask |= (x >> 7) & (1ULL << en) & ~COL0;
+    }
+    return mask ^ x;
+}
+
+bitboard blackPawnMask(bitboard x, bitboard same, bitboard diff, int en) {
+    bitboard mask = x;
+    bitboard empty = ~(same | diff);
+    mask |= (x << 7) & diff & ~COL7; // Capture left, may or may not promote
+    mask |= (x << 9) & diff & ~COL0; // Capture right, may or may not promote
+    mask |= (x << 8) & empty; // Forward once, may or may not promote
+    mask |= (x << 16) & empty & (empty << 8) & ROW3; // Forward two cells
+    if (en != -1) {
+        mask |= (x << 7) & (1ULL << en) & ~COL7;
+        mask |= (x << 9) & (1ULL << en) & ~COL0;
+    }
+    return mask ^ x;
+}

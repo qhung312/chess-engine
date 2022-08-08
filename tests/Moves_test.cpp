@@ -25,7 +25,7 @@ long long perft(int d) {
 }
 
 int main() {
-    Board a = boardFromFEN("B2bqn2/NK6/3B1R2/1b6/7k/1Q6/1R2n3/2r2Nr1 w - - 0 1");
+    Board a = boardFromFEN("2r1N1N1/1k1P2Pb/2p1R1p1/1q1r2Bp/P2RPKnp/p1p2PP1/p3p2b/6n1 w - - 0 1");
     st.push(a);
     long long ans = perft(MAX_DEPTH);
     cout << ans << '\n';

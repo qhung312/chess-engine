@@ -204,7 +204,16 @@ Board doMove(const Board& b, const string& s) {
     
     if (b.whitePawn >> f & 1ULL) {
         if (t < 8) {
-            ans.set(ans.whiteQueen, t);
+            char promote = s.back();
+            if (promote == 'q') {
+                ans.set(ans.whiteQueen, t);
+            } else if (promote == 'r') {
+                ans.set(ans.whiteRook, t);
+            } else if (promote == 'b') {
+                ans.set(ans.whiteBishop, t);
+            } else {
+                ans.set(ans.whiteKnight, t);
+            }
             ans.enPassant = -1;
         } else if (t == b.enPassant) {
             ans.unset(t + 8);
@@ -220,7 +229,16 @@ Board doMove(const Board& b, const string& s) {
         ans.halfMove = 0;
     } else if (b.blackPawn >> f & 1ULL) {
         if (t >= 56) {
-            ans.set(ans.blackQueen, t);
+            char promote = s.back();
+            if (promote == 'q') {
+                ans.set(ans.blackQueen, t);
+            } else if (promote == 'r') {
+                ans.set(ans.blackRook, t);
+            } else if (promote == 'b') {
+                ans.set(ans.blackBishop, t);
+            } else {
+                ans.set(ans.blackKnight, t);
+            }
             ans.enPassant = -1;
         } else if (t == b.enPassant) {
             ans.unset(t - 8);

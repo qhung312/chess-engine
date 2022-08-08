@@ -42,7 +42,14 @@ vector<string> moveWhitePawn(const Board& b) {
         bitboard can = whitePawnMask(1ULL << i, white, black, b.enPassant);
         while (can) {
             int j = __builtin_ctzll(can);
-            ans.push_back(convert64(i) + convert64(j));
+            if (j < 8) {
+                ans.push_back(convert64(i) + convert64(j) + "q");
+                ans.push_back(convert64(i) + convert64(j) + "r");
+                ans.push_back(convert64(i) + convert64(j) + "b");
+                ans.push_back(convert64(i) + convert64(j) + "n");
+            } else {
+                ans.push_back(convert64(i) + convert64(j));
+            }
             can ^= 1ULL << j;
         }
         p ^= 1ULL << i;
@@ -61,7 +68,14 @@ vector<string> moveBlackPawn(const Board& b) {
         bitboard can = blackPawnMask(1ULL << i, black, white, b.enPassant);
         while (can) {
             int j = __builtin_ctzll(can);
-            ans.push_back(convert64(i) + convert64(j));
+            if (j >= 56) {
+                ans.push_back(convert64(i) + convert64(j) + "q");
+                ans.push_back(convert64(i) + convert64(j) + "r");
+                ans.push_back(convert64(i) + convert64(j) + "b");
+                ans.push_back(convert64(i) + convert64(j) + "n");
+            } else {
+                ans.push_back(convert64(i) + convert64(j));
+            }
             can ^= 1ULL << j;
         }
         p ^= 1ULL << i;

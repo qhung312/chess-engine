@@ -8,13 +8,13 @@ vector<string> pseudoLegal(const Board& b) {
     bitboard wp = b.whitePieces();
     bitboard bp = b.blackPieces();
     if (b.turnToPlay == WHITE) {
-        return moveWhitePawn(b) + moveRook(b.whiteRook, wp, bp) +
-               moveBishop(b.whiteBishop, wp, bp) + moveQueen(b.whiteQueen, wp, bp) +
-               moveWhiteKing(b) + moveKnight(b.whiteKnight, wp, bp);
+        return moveBishop(b.whiteBishop, wp, bp) + moveRook(b.whiteRook, wp, bp) +
+               moveKnight(b.whiteKnight, wp, bp) + moveQueen(b.whiteQueen, wp, bp) +
+               moveWhiteKing(b) + moveWhitePawn(b);
     } else {
-        return moveBlackPawn(b) + moveRook(b.blackRook, bp, wp) +
-               moveBishop(b.blackBishop, bp, wp) + moveQueen(b.blackQueen, bp, wp) +
-               moveBlackKing(b) + moveKnight(b.blackKnight, bp, wp);
+        return moveBishop(b.blackBishop, bp, wp) + moveRook(b.blackRook, bp, wp) +
+               moveKnight(b.blackKnight, bp, wp) + moveQueen(b.blackQueen, bp, wp) +
+               moveBlackKing(b) + moveBlackPawn(b);
     }
 }
 

@@ -23,7 +23,9 @@ const unsigned long long COL7 = 9259542123273814144ULL;
 const unsigned long long COL01 = 217020518514230019ULL;
 const unsigned long long COL67 = 13889313184910721216ULL;
 
-const vector<int> KNIGHT_SHIFTS = {};
+// Constants for searching
+const int SEARCH_DEPTH = 5;
+
 /*
 Piece values and positional values are taken
 from https://www.chessprogramming.org/Simplified_Evaluation_Function
@@ -38,7 +40,7 @@ const int ROOK_WEIGHT = 500;
 const int QUEEN_WEIGHT = 900;
 const int KING_WEIGHT = 20000;
 
-const vector<vector<int>> PAWN_POSITION_WHITE = {
+const int PAWN_POSITION_WHITE[8][8] = {
     {0, 0, 0, 0, 0, 0, 0, 0},
     {50, 50, 50, 50, 50, 50, 50, 50},
     {10, 10, 20, 30, 30, 20, 10, 10},
@@ -48,7 +50,7 @@ const vector<vector<int>> PAWN_POSITION_WHITE = {
     {5, 10, 10, -20, -20, 10, 10, 5},
     {0, 0, 0, 0, 0, 0, 0, 0}
 };
-const vector<vector<int>> PAWN_POSITION_BLACK = {
+const int PAWN_POSITION_BLACK[8][8] = {
     {0, 0, 0, 0, 0, 0, 0, 0},
     {5, 10, 10, -20, -20, 10, 10, 5},
     {5,-5,-10, 0, 0, -10, -5, 5},
@@ -59,7 +61,7 @@ const vector<vector<int>> PAWN_POSITION_BLACK = {
     {0, 0, 0, 0, 0, 0, 0, 0}
 };
 
-const vector<vector<int>> KNIGHT_POSITION_WHITE = {
+const int KNIGHT_POSITION_WHITE[8][8] = {
     {-50,-40,-30,-30,-30,-30,-40,-50},
     {-40,-20,  0,  0,  0,  0,-20,-40},
     {-30,  0, 10, 15, 15, 10,  0,-30},
@@ -69,7 +71,7 @@ const vector<vector<int>> KNIGHT_POSITION_WHITE = {
     {-40,-20,  0,  5,  5,  0,-20,-40},
     {-50,-40,-30,-30,-30,-30,-40,-50}
 };
-const vector<vector<int>> KNIGHT_POSITION_BLACK = {
+const int KNIGHT_POSITION_BLACK[8][8] = {
     {-50,-40,-30,-30,-30,-30,-40,-50},
     {-40,-20,  0,  5,  5,  0,-20,-40},
     {-30,  5, 10, 15, 15, 10,  5,-30},
@@ -80,7 +82,7 @@ const vector<vector<int>> KNIGHT_POSITION_BLACK = {
     {-50,-40,-30,-30,-30,-30,-40,-50}
 };
 
-const vector<vector<int>> BISHOP_POSITION_WHITE = {
+const int BISHOP_POSITION_WHITE[8][8] = {
     {-20,-10,-10,-10,-10,-10,-10,-20},
     {-10,  0,  0,  0,  0,  0,  0,-10},
     {-10,  0,  5, 10, 10,  5,  0,-10},
@@ -90,7 +92,7 @@ const vector<vector<int>> BISHOP_POSITION_WHITE = {
     {-10,  5,  0,  0,  0,  0,  5,-10},
     {-20,-10,-10,-10,-10,-10,-10,-20}
 };
-const vector<vector<int>> BISHOP_POSITION_BLACK = {
+const int BISHOP_POSITION_BLACK[8][8] = {
     {-20,-10,-10,-10,-10,-10,-10,-20},
     {-10,  5,  0,  0,  0,  0,  5,-10},
     {-10, 10, 10, 10, 10, 10, 10,-10},
@@ -101,7 +103,7 @@ const vector<vector<int>> BISHOP_POSITION_BLACK = {
     {-20,-10,-10,-10,-10,-10,-10,-20}
 };
 
-const vector<vector<int>> ROOK_POSITION_WHITE = {
+const int ROOK_POSITION_WHITE[8][8] = {
     {0,  0,  0,  0,  0,  0,  0,  0},
     {5, 10, 10, 10, 10, 10, 10,  5},
     {-5,  0,  0,  0,  0,  0,  0, -5},
@@ -111,7 +113,7 @@ const vector<vector<int>> ROOK_POSITION_WHITE = {
     {-5,  0,  0,  0,  0,  0,  0, -5},
     {0,  0,  0,  5,  5,  0,  0,  0}
 };
-const vector<vector<int>> ROOK_POSITION_BLACK = {
+const int ROOK_POSITION_BLACK[8][8] = {
     {0,  0,  0,  5,  5,  0,  0,  0},
     {-5,  0,  0,  0,  0,  0,  0, -5},
     {-5,  0,  0,  0,  0,  0,  0, -5},
@@ -122,7 +124,7 @@ const vector<vector<int>> ROOK_POSITION_BLACK = {
     {0,  0,  0,  0,  0,  0,  0,  0}
 };
 
-const vector<vector<int>> QUEEN_POSITION_WHITE = {
+const int QUEEN_POSITION_WHITE[8][8] = {
     {-20,-10,-10, -5, -5,-10,-10,-20},
     {-10,  0,  0,  0,  0,  0,  0,-10},
     {-10,  0,  5,  5,  5,  5,  0,-10},
@@ -132,7 +134,7 @@ const vector<vector<int>> QUEEN_POSITION_WHITE = {
     {-10,  0,  5,  0,  0,  0,  0,-10},
     {-20,-10,-10, -5, -5,-10,-10,-20}
 };
-const vector<vector<int>> QUEEN_POSITION_BLACK = {
+const int QUEEN_POSITION_BLACK[8][8] = {
     {-20,-10,-10, -5, -5,-10,-10,-20},
     {-10,  0,  5,  0,  0,  0,  0,-10},
     {-10,  5,  5,  5,  5,  5,  0,-10},
@@ -143,7 +145,7 @@ const vector<vector<int>> QUEEN_POSITION_BLACK = {
     {-20,-10,-10, -5, -5,-10,-10,-20}
 };
 
-const vector<vector<int>> KING_POSITION_WHITE = {
+const int KING_POSITION_WHITE[8][8] = {
     {-50,-40,-30,-20,-20,-30,-40,-50},
     {-30,-20,-10,  0,  0,-10,-20,-30},
     {-30,-10, 20, 30, 30, 20,-10,-30},
@@ -153,7 +155,7 @@ const vector<vector<int>> KING_POSITION_WHITE = {
     {-30,-30,  0,  0,  0,  0,-30,-30},
     {-50,-30,-30,-30,-30,-30,-30,-50}
 };
-const vector<vector<int>> KING_POSITION_BLACK = {
+const int KING_POSITION_BLACK[8][8] = {
     {-50,-30,-30,-30,-30,-30,-30,-50},
     {-30,-30,  0,  0,  0,  0,-30,-30},
     {-30,-10, 20, 30, 30, 20,-10,-30},

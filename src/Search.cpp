@@ -1,7 +1,12 @@
 #include "Search.h"
 #include <climits>
 
-Move search(const Board& cur, int d, int a, int b) {
+Engine::Engine() {
+    board = Board();
+}
+
+Move Engine::search(int d, int a, int b) {
+    auto cur = st.top();
     auto v = legalMoves(cur);
     
     if (v.empty()) {
@@ -20,12 +25,16 @@ Move search(const Board& cur, int d, int a, int b) {
         Move ans = {"", INT_MIN};
         for (auto& s : v) {
             auto nxt = doMove(cur, s);
-            auto res = search(nxt, d - 1, a, b);
+            st.push(nxt);
+            
+            auto res = search(d - 1, a, b);
             if (res.second > ans.second) {
                 ans.first = s;
                 ans.second = res.second;
             }
             a = max(a, res.second);
+            st.pop();
+            
             if (a >= b) {
                 break;
             }
@@ -36,12 +45,16 @@ Move search(const Board& cur, int d, int a, int b) {
         Move ans = {"", INT_MAX};
         for (auto& s : v) {
             auto nxt = doMove(cur, s);
-            auto res = search(nxt, d - 1, a, b);
+            st.push(nxt);
+            
+            auto res = search(d - 1, a, b);
             if (res.second < ans.second) {
                 ans.first = s;
                 ans.second = res.second;
             }
             b = min(b, res.second);
+            st.pop();
+            
             if (a >= b) {
                 break;
             }
@@ -51,6 +64,8 @@ Move search(const Board& cur, int d, int a, int b) {
     }
 }
 
-Move search(const Board& cur) {
-    return search(cur, SEARCH_DEPTH, INT_MIN, INT_MAX);
+Move Engine::search() {
+    if (!st.empty()) st.pop();
+    st.push(board);
+    return search(SEARCH_DEPTH, INT_MIN, INT_MAX);
 }

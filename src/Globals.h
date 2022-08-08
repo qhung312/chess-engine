@@ -10,7 +10,7 @@ piece values, and position values for each piece.
 */
 
 const string ID = "qhung312-BOT";
-const string AUTHOR = "qhung312";
+const string AUTHOR = "Quoc Hung";
 
 // Define some useful mask for rows and columns
 const unsigned long long ROW0 = 255ULL;

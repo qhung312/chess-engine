@@ -6,7 +6,7 @@ using namespace std;
 using bitboard = unsigned long long;
 using u64 = unsigned long long; // Same type but used for Zobrist keys
 
-const int TRANPOSITION_SIZE = 104729; // 10,000-th prime!
+const int TRANSPOSITION_SIZE = 224737; // 20,000th prime!
 
 extern u64 WHITEPAWN_RANDOM[64];
 extern u64 WHITEKNIGHT_RANDOM[64];
@@ -65,9 +65,6 @@ struct Board {
     u64 Z; // Zobrist key
     int hashKey() const;
 };
-
-extern Board actualBoard[TRANPOSITION_SIZE];
-extern bool hasEntry[TRANPOSITION_SIZE];
 
 u64 getZobrist(const Board&);
 

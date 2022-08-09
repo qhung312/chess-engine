@@ -22,9 +22,6 @@ u64 BKC_RANDOM;
 u64 BQC_RANDOM;
 u64 EN_RANDOM[8];
 
-Board actualBoard[TRANPOSITION_SIZE];
-bool hasEntry[TRANPOSITION_SIZE];
-
 Board::Board() {
     const vector<string> b = {
         "rnbqkbnr",
@@ -211,7 +208,7 @@ bool operator==(const Board& a, const Board& b) {
 }
 
 int Board::hashKey() const {
-    return Z % TRANPOSITION_SIZE;
+    return Z % TRANSPOSITION_SIZE;
 }
 
 Board boardFromFEN(const string& fen) {

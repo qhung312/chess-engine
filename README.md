@@ -1,2 +1,2 @@
 # chess-engine
-Chess engine in C++
+A UCI-compatible chess engine in C++

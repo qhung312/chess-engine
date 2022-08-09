@@ -9,7 +9,7 @@ int evaluate(const Board& b) {
         while (mask) {
             int i = __builtin_ctzll(mask);
             int x = i / 8, y = i % 8;
-            if (b.whiteKing >> i & 1ULL) { ans += KING_WEIGHT + KING_POSITION_WHITE[x][y]; }
+            if      (b.whiteKing >> i & 1ULL) { ans += KING_WEIGHT + KING_POSITION_WHITE[x][y]; }
             else if (b.whiteRook >> i & 1ULL) { ans += ROOK_WEIGHT + ROOK_POSITION_WHITE[x][y]; }
             else if (b.whiteBishop >> i & 1ULL) { ans += BISHOP_WEIGHT + BISHOP_POSITION_WHITE[x][y]; }
             else if (b.whiteQueen >> i & 1ULL) { ans += QUEEN_WEIGHT + QUEEN_POSITION_WHITE[x][y]; }

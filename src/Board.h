@@ -1,18 +1,40 @@
 #pragma once
-#include <string>
 #include <vector>
 #include <iostream>
-#include <utility>
 
 using namespace std;
 using bitboard = unsigned long long;
+using u64 = unsigned long long; // Same type but used for Zobrist keys
+
+const int TRANPOSITION_SIZE = 104729; // 10,000-th prime!
+
+extern u64 WHITEPAWN_RANDOM[64];
+extern u64 WHITEKNIGHT_RANDOM[64];
+extern u64 WHITEBISHOP_RANDOM[64];
+extern u64 WHITEROOK_RANDOM[64];
+extern u64 WHITEQUEEN_RANDOM[64];
+extern u64 WHITEKING_RANDOM[64];
+
+extern u64 BLACKPAWN_RANDOM[64];
+extern u64 BLACKKNIGHT_RANDOM[64];
+extern u64 BLACKBISHOP_RANDOM[64];
+extern u64 BLACKROOK_RANDOM[64];
+extern u64 BLACKQUEEN_RANDOM[64];
+extern u64 BLACKKING_RANDOM[64];
+
+extern u64 WHITE_TURN_RANDOM;
+extern u64 WKC_RANDOM;
+extern u64 WQC_RANDOM;
+extern u64 BKC_RANDOM;
+extern u64 BQC_RANDOM;
+extern u64 EN_RANDOM[8];
 
 enum Side { BLACK, WHITE };
 
 struct Board {
     Board();
-    Board(const vector<string>&, Side, bool, bool, bool, bool, int, int, int);
-    void init(const vector<string>&, Side, bool, bool, bool, bool, int, int, int);
+    Board(const vector<string>&, Side, bool, bool, bool, bool, int);
+    void init(const vector<string>&, Side, bool, bool, bool, bool, int);
     bitboard whitePieces() const;
     bitboard blackPieces() const;
     
@@ -24,6 +46,7 @@ struct Board {
 
     // Allow debugging of entire board by printing 8x8 chessboard
     friend ostream& operator<<(ostream&, const Board&);
+    friend bool operator==(const Board&, const Board&);
     
     Side turnToPlay;
     
@@ -38,9 +61,15 @@ struct Board {
     bool whiteQueenCastle, blackQueenCastle;
     
     int enPassant; // -1 if no target available
-    int halfMove;
-    int fullMove;
+    
+    u64 Z; // Zobrist key
+    int hashKey() const;
 };
+
+extern Board actualBoard[TRANPOSITION_SIZE];
+extern bool hasEntry[TRANPOSITION_SIZE];
+
+u64 getZobrist(const Board&);
 
 Board boardFromFEN(const string&);
 Board doMove(const Board&, const string&);

@@ -7,6 +7,7 @@ using namespace std;
 using Move = pair<string, int>;
 
 struct Engine {
+    int leaves = 0;
     Board board;
     stack<Board> st;
     Engine();

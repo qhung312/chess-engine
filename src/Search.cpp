@@ -11,7 +11,7 @@ Move Engine::search(int d, int a, int b) {
     
     if (v.empty()) {
         if (checked(cur, cur.turnToPlay)) {
-            return {"", cur.turnToPlay == WHITE ? -KING_WEIGHT : KING_WEIGHT};
+            return {"", cur.turnToPlay == WHITE ? -MATE_SCORE : MATE_SCORE};
         } else {
             return {"", 0};
         }
@@ -21,8 +21,9 @@ Move Engine::search(int d, int a, int b) {
         return {"", evaluate(cur)};
     }
     
+    leaves++;
     if (cur.turnToPlay == WHITE) {
-        Move ans = {"", INT_MIN};
+        Move ans = {"", -INF};
         for (auto& s : v) {
             auto nxt = doMove(cur, s);
             st.push(nxt);
@@ -42,7 +43,7 @@ Move Engine::search(int d, int a, int b) {
         
         return ans;
     } else {
-        Move ans = {"", INT_MAX};
+        Move ans = {"", INF};
         for (auto& s : v) {
             auto nxt = doMove(cur, s);
             st.push(nxt);
@@ -65,7 +66,8 @@ Move Engine::search(int d, int a, int b) {
 }
 
 Move Engine::search() {
+    leaves = 0;
     if (!st.empty()) st.pop();
     st.push(board);
-    return search(SEARCH_DEPTH, INT_MIN, INT_MAX);
+    return search(SEARCH_DEPTH, -INF, INF);
 }

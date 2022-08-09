@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <vector>
 using namespace std;
 
 /*
@@ -24,7 +23,9 @@ const unsigned long long COL01 = 217020518514230019ULL;
 const unsigned long long COL67 = 13889313184910721216ULL;
 
 // Constants for searching
-const int SEARCH_DEPTH = 5;
+const int SEARCH_DEPTH = 6;
+const int INF = 1e8;
+const int MATE_SCORE = 1e7;
 
 /*
 Piece values and positional values are taken

@@ -9,6 +9,8 @@ int tt_score[TRANSPOSITION_SIZE];
 string tt_bestmove[TRANSPOSITION_SIZE];
 NodeType tt_type[TRANSPOSITION_SIZE];
 
+vector<string> pv_line;
+
 void clearTransposition() {
     fill(tt_empty, tt_empty + TRANSPOSITION_SIZE, true);
 }
@@ -26,26 +28,28 @@ Engine::Engine() {
     board = Board();
 }
 
-Move Engine::search(int d, int a, int b) {
+void reorder_moves(vector<string>& moves, const string& s) {
+    int i = find(moves.begin(), moves.end(), s) - moves.begin();
+    assert(i != moves.size());
+    swap(moves[i], moves.front());
+}
+
+Move Engine::search(const Board& cur, int d, int a, int b, bool follow_pv) {
     // Check if position is already stored
-    Board cur = st.top();
     int key = cur.hashKey();
     
     if (!tt_empty[key] && tt_board[key] == cur && tt_depth[key] >= d) {
         NodeType type = tt_type[key];
         if (type == EXACT) {
-            used_lookup++;
             return {tt_bestmove[key], tt_score[key]};
         } else if (type == GREATER_EQUAL) {
             int na = max(a, tt_score[key]);
             if (na >= b) {
-                used_lookup++;
                 return {tt_bestmove[key], tt_score[key]};
             }
         } else {
             int nb = min(b, tt_score[key]);
             if (a >= nb) {
-                used_lookup++;
                 return {tt_bestmove[key], tt_score[key]};
             }
         }
@@ -70,24 +74,26 @@ Move Engine::search(int d, int a, int b) {
         return {"", score};
     }
     
-    // Start normal search
-    used_lookup++;
+    // Start normal search but try to follow pv first
+    nodes_looked++;
+    
+    int pvIdx = cur_depth - d;
+    bool can_pv = follow_pv && (pvIdx < pv_line.size());
+    if (can_pv) reorder_moves(v, pv_line[pvIdx]);
+    
     if (cur.turnToPlay == WHITE) {
         Move ans = {"", -INF};
-        for (auto& s : v) {
-            auto nxt = doMove(cur, s);
-            st.push(nxt);
-            
-            auto res = search(d - 1, a, b);
-            st.pop();
+        for (int i = 0; i < (int) v.size(); i++) {
+            auto nxt = doMove(cur, v[i]);
+            auto res = search(nxt, d - 1, a, b, can_pv && i == 0);
             if (res.second > ans.second) {
-                ans.first = s;
+                ans.first = v[i];
                 ans.second = res.second;
             }
             a = max(a, res.second);
             
             if (a >= b) {
-                storeTransposition(key, cur, d, a, s, GREATER_EQUAL);
+                storeTransposition(key, cur, d, a, v[i], GREATER_EQUAL);
                 return ans;
             }
         }
@@ -96,20 +102,17 @@ Move Engine::search(int d, int a, int b) {
         return ans;
     } else {
         Move ans = {"", INF};
-        for (auto& s : v) {
-            auto nxt = doMove(cur, s);
-            st.push(nxt);
-            
-            auto res = search(d - 1, a, b);
-            st.pop();
+        for (int i = 0; i < (int) v.size(); i++) {
+            auto nxt = doMove(cur, v[i]);
+            auto res = search(nxt, d - 1, a, b, can_pv && i == 0);
             if (res.second < ans.second) {
-                ans.first = s;
+                ans.first = v[i];
                 ans.second = res.second;
             }
             b = min(b, res.second);
             
             if (a >= b) {
-                storeTransposition(key, cur, d, b, s, LESS_EQUAL);
+                storeTransposition(key, cur, d, b, v[i], LESS_EQUAL);
                 return ans;
             }
         }
@@ -120,8 +123,26 @@ Move Engine::search(int d, int a, int b) {
 }
 
 Move Engine::search() {
-    used_lookup = 0;
-    if (!st.empty()) st.pop();
-    st.push(board);
-    return search(SEARCH_DEPTH, -INF, INF);
+    pv_line.clear();
+    Move ans;
+    
+    for (cur_depth = 1; cur_depth <= SEARCH_DEPTH; cur_depth++) {
+        nodes_looked = 0;
+        ans = search(board, cur_depth, -INF, INF, 1);
+        int nodes = nodes_looked;
+        
+        pv_line.clear();
+        string best = ans.first;
+        Board cur = board;
+        while (best != "") {
+            pv_line.push_back(best);
+            cur = doMove(cur, best);
+            best = search(cur, cur_depth - (int) pv_line.size(), -INF, INF, false).first;
+        }
+        
+        cout << "info depth " << cur_depth << " nodes " << nodes << " pv ";
+        for (auto& s : pv_line) cout << s << ' ';
+        cout << '\n';
+    }
+    return ans;
 }

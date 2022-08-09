@@ -15,15 +15,19 @@ extern int tt_score[TRANSPOSITION_SIZE];
 extern string tt_bestmove[TRANSPOSITION_SIZE];
 extern NodeType tt_type[TRANSPOSITION_SIZE];
 
+extern vector<string> pv_line;
+
 void clearTransposition();
 void storeTransposition(int, const Board&, int, int, const string&, NodeType);
 
+void reorder_moves(vector<string>&, const string&);
+
 struct Engine {
-    int used_lookup;
+    int nodes_looked;
+    int cur_depth;
     
     Board board;
-    stack<Board> st;
     Engine();
-    Move search(int, int, int);
+    Move search(const Board&, int, int, int, bool);
     Move search();
 };

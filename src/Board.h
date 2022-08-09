@@ -6,7 +6,7 @@ using namespace std;
 using bitboard = unsigned long long;
 using u64 = unsigned long long; // Same type but used for Zobrist keys
 
-const int TRANSPOSITION_SIZE = 224737; // 20,000th prime!
+const int TRANSPOSITION_SIZE = 224737;
 
 extern u64 WHITEPAWN_RANDOM[64];
 extern u64 WHITEKNIGHT_RANDOM[64];

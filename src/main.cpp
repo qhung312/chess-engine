@@ -85,8 +85,6 @@ int main() {
         } else if (line.find("go") == 0) {
             auto res = e.search();
             cout << "bestmove " << res.first << '\n';
-            
-            cerr << "Lookups: " << e.used_lookup << '\n';
         } else if (line == "quit") {
             running = false;
         } else if (line == "print") {

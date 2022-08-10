@@ -1,6 +1,8 @@
 #pragma once
 #include "Moves.h"
 #include "Eval.h"
+#include <random>
+#include <chrono>
 #include <stack>
 
 using namespace std;
@@ -25,9 +27,10 @@ void reorder_moves(vector<string>&, const string&);
 struct Engine {
     int nodes_looked;
     int cur_depth;
+    Move optimal_move;
     
     Board board;
     Engine();
     Move search(const Board&, int, int, int, bool);
-    Move search();
+    void search();
 };

@@ -122,19 +122,23 @@ Move Engine::search(const Board& cur, int d, int a, int b, bool follow_pv) {
     }
 }
 
-Move Engine::search() {
+void Engine::search() {
     pv_line.clear();
-    Move ans;
+    clock_t start = clock();
     
     for (cur_depth = 1; cur_depth <= SEARCH_DEPTH; cur_depth++) {
         nodes_looked = 0;
-        ans = search(board, cur_depth, -INF, INF, 1);
+        if ((double) (clock() - start) / CLOCKS_PER_SEC >= SEARCH_TIME) {
+            return;
+        }
+        Move ans = search(board, cur_depth, -INF, INF, 1);
+        optimal_move = ans;
         int nodes = nodes_looked;
         
         pv_line.clear();
         string best = ans.first;
         Board cur = board;
-        while (best != "") {
+        while (best != "" && pv_line.size() < cur_depth) {
             pv_line.push_back(best);
             cur = doMove(cur, best);
             best = search(cur, cur_depth - (int) pv_line.size(), -INF, INF, false).first;
@@ -144,5 +148,4 @@ Move Engine::search() {
         for (auto& s : pv_line) cout << s << ' ';
         cout << '\n';
     }
-    return ans;
 }
